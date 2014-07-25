@@ -1,0 +1,311 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+<ui:define name="title">Orders</ui:define>
+
+<ui:define name="west">
+    <p:layoutUnit position="west" size="0"
+                  resizable="false" closable="false" collapsible="true"
+                  styleClass="admin"
+            >
+
+    </p:layoutUnit>
+</ui:define>
+
+
+<ui:define name="center">
+    <p:layoutUnit position="center">
+
+        <h:form id="ordersForm">
+            <p:focus/>
+
+            <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+            <div class="m10Center" style="width: 850px">
+
+                <p:dataTable id="ordersTable"
+                             value="#{ordersBackingBean.orders}"
+                             var="order"
+                             rowKey="#{order.id}"
+                             paginator="true" rows="15"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink}
+                             {PreviousPageLink} {PageLinks} {NextPageLink}
+                             {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,15,25,50"
+                             lazy="true"
+                             editable="true"
+                             rowStyleClass="#{order.active ? null : 'disabled'}" >
+
+                    <p:ajax event="rowEdit" listener="#{ordersBackingBean.onEdit}"
+                            update=":ordersForm:ordersTable :ordersForm:messages" />
+                    <p:ajax event="rowEditCancel" listener="#{ordersBackingBean.onCancel}"
+                            update=":ordersForm:messages" />
+
+                    <f:facet name="header">
+                        <div class="left">
+                            Orders
+                        </div>
+                        <div id="waiterButtons" class="right">
+                            <p:commandButton id="refresher"
+                                             actionListener="#{ordersBackingBean.onRefreshAccounts}"
+                                             update="ordersTable"
+                                             icon="ui-icon-refresh"
+                                    />
+                            <p:selectOneMenu
+                                    value="#{ordersBackingBean.searchCriteria.selectedOrderStatus}">
+                                <f:selectItems value="#{ordersBackingBean.statuses}"
+                                               var="status"
+                                               itemValue="#{status}"
+                                               itemLabel="#{status.label}"
+                                        />
+                                <p:ajax listener="#{ordersBackingBean.serviceStateChange()}"
+                                        update="@form" />
+                            </p:selectOneMenu>
+                            <p:commandButton id="toggler"
+                                             actionListener="#{ordersBackingBean.onHideShowDisabled}"
+                                             update="@this ordersTable"
+                                             value="#{accountsBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                             icon="ui-icon-calculator" />
+                        </div>
+                        <div class="cBoth"/>
+                    </f:facet>
+
+                    <p:column headerText="#" sortBy="#{order.id}" style="width:7%" >
+                                <h:outputText value="#{order.id}" />
+                    </p:column>
+
+                    <p:column headerText="Table" style="width:6%">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{order.restaurantTable.tableNumber}" />
+                            </f:facet>
+                            <f:facet name="input">
+
+                                <p:selectOneMenu value="#{order.restaurantTable}"
+                                                 converter="#{restaurantTableConverter}"
+                                                 styleClass="aLeft"
+                                                 style="width: 100%"
+                                        >
+                                    <f:selectItems value="#{ordersBackingBean.restaurantTables}"
+                                                   var="table"
+                                                   itemLabel="#{table.tableNumber}"
+                                                   itemValue="#{table}" />
+                                </p:selectOneMenu>
+
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Customer" sortBy="#{order.guestName}"
+                              style="width:9%" >
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{order.guestName}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{order.guestName}" style="width:100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Time" sortBy="#{order.orderTime}" style="width:19%">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{order.orderTimeInDateFormat}" >
+                                    <f:convertDateTime dateStyle="full"
+                                                       pattern="dd.MM.yyyy 'at' HH:mm"/>
+                                </h:outputText>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{order.orderTimeInDateFormat}"
+                                             style="width:100%" >
+                                    <f:convertDateTime dateStyle="full"
+                                                       pattern="dd.MM.yyyy 'at' HH:mm"/>
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Waiter" style="width:15%">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{order.waiter.fullName}" />
+                            </f:facet>
+                            <f:facet name="input">
+
+                                <p:selectOneMenu value="#{order.waiter}"
+                                                 converter="#{waiterConverter}"
+                                                 styleClass="aLeft"
+                                                 style="width: 100%"
+                                        >
+                                    <f:selectItems value="#{ordersBackingBean.waiters}"
+                                                   var="waiter"
+                                                   itemLabel="#{waiter.fullName}"
+                                                   itemValue="#{waiter}" />
+                                </p:selectOneMenu>
+
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Status" style="width:10%">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{order.status.label}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{order.status}" style="width: 100%">
+                                    <f:selectItems value="#{ordersBackingBean.statuses}"
+                                                   var="status"
+                                                   itemValue="#{status}"
+                                                   itemLabel="#{status.label}"
+                                            />
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Comments" style="width:17%">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{order.comments}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputTextarea value="#{order.comments}"  rows="4" cols="20" />
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Enabled" style="width:5%" styleClass="aCenter">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <p:selectBooleanCheckbox value="#{order.active}" disabled="true"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectBooleanCheckbox value="#{order.active}" />
+                            </f:facet>
+                        </p:cellEditor>
+
+                    </p:column>
+
+                    <p:column style="width:5%">
+                        <p:rowEditor />
+                    </p:column>
+
+                    <p:column style="width:7%">
+                        <p:commandLink value="Details"
+                                       actionListener="#{ordersBackingBean.editOrderDetails(order)}"
+                                       update=":orderInfosForm" />
+                    </p:column>
+
+
+
+                </p:dataTable>
+
+            </div>
+
+        </h:form>
+    </p:layoutUnit>
+</ui:define>
+
+<ui:define name="east">
+    <p:layoutUnit position="east" size="450"
+                  resizable="false" closable="false" collapsible="true"
+                  styleClass="admin"
+            >
+
+        <h:form id="orderInfosForm">
+            <p:focus/>
+
+            <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+            <div class="m10Center" style="width: 420px">
+
+                <p:dataTable id="orderInfosTable"
+                             value="#{ordersBackingBean.selectedOrder.orderDetails}" var="orderDetail"
+                             rowKey="#{orderDetail.id}"
+                             editable="true" rowStyleClass="#{orderDetail.active ? null : 'disabled'}"
+                             rendered="#{ordersBackingBean.selectedOrder != null}"
+                        >
+
+                    <p:ajax event="rowEdit" listener="#{ordersBackingBean.onOrderInfoEdit}"
+                            update=":orderInfosForm:orderInfosTable :orderInfosForm:messages" />
+                    <p:ajax event="rowEditCancel" listener="#{ordersBackingBean.onOrderInfoCancel}"
+                            update=":orderInfosForm:messages" />
+
+
+                    <p:column headerText="Menu Item" style="width:40%">
+                        <h:outputText value="#{orderDetail.menuItem.title}" />
+                    </p:column>
+
+                    <p:column headerText="Quantity" style="width:10%"  styleClass="aCenter">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{orderDetail.itemQuantity}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{orderDetail.itemQuantity}" style="width:100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Price" style="width:15%"  styleClass="aRight">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{orderDetail.prettyPrice}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{orderDetail.prettyPrice}" style="width:100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Done" style="width:10%" styleClass="aCenter">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <p:selectBooleanCheckbox value="#{orderDetail.cooked}"
+                                                         disabled="true"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectBooleanCheckbox value="#{orderDetail.cooked}" />
+                            </f:facet>
+                        </p:cellEditor>
+
+                    </p:column>
+
+                    <p:column headerText="Enabled" style="width:10%" styleClass="aCenter">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <p:selectBooleanCheckbox value="#{orderDetail.active}"
+                                                         disabled="true"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectBooleanCheckbox value="#{orderDetail.active}" />
+                            </f:facet>
+                        </p:cellEditor>
+
+                    </p:column>
+
+                    <p:column style="width:15%">
+                        <p:rowEditor />
+                    </p:column>
+
+                </p:dataTable>
+
+
+            </div>
+
+        </h:form>
+
+    </p:layoutUnit>
+</ui:define>
+
+
+</ui:composition>

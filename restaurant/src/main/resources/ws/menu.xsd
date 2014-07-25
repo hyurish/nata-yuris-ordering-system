@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+        elementFormDefault="qualified"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:mn="http://localhost:8080/menu/schemas"
+        targetNamespace="http://localhost:8080/menu/schemas">
+    <xs:element name="MenuRequest">
+        <xs:complexType />
+    </xs:element>
+    <xs:element name="MenuResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element type="mn:CategoryType" name="Categories" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="MenuByCategoryIdRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element type="xs:long" name="Id" maxOccurs="1" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="MenuByCategoryIdResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element type="mn:CategoryType" name="Categories" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="CategoryType">
+        <xs:sequence>
+            <xs:element type="xs:long" name="Id"/>
+            <xs:element type="xs:string" name="Title"/>
+            <xs:element type="xs:int" name="Priority"/>
+            <xs:element type="mn:MenuItemType" name="MenuItems" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MenuItemType">
+        <xs:sequence>
+            <xs:element type="xs:long" name="Id"/>
+            <xs:element type="xs:string" name="Title"/>
+            <xs:element type="xs:string" name="Description"/>
+            <xs:element type="xs:string" name="Weight"/>
+            <xs:element type="xs:double" name="Price"/>
+            <xs:element type="xs:string" name="Status"/>
+            <xs:element type="xs:int" name="Priority"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

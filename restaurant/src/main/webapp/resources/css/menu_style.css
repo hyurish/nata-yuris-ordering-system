@@ -1,0 +1,412 @@
+*, html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, label, fieldset, input, p, blockquote, th, td {
+    margin:0;
+    padding:0;
+}
+
+table {
+    border-collapse:collapse;
+    border-spacing:0;
+}
+a {
+    text-decoration: none;
+}
+body {
+    color: #606060;
+    background-color: #eff5f6;
+}
+#container {
+    width : 1080px;
+    margin: 0 auto;
+}
+#cartOuter {
+    position: relative;
+}
+#cart {
+    position: fixed;
+    display: block;
+    top: 0;
+    left: 50%;
+    width: 500px;
+    right: 20px;
+    padding: 10px 20px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 14px;
+    background: #deede8;
+    z-index: 99;
+    transition: top .4s ease-in-out;
+}
+
+#cart span, #cart a {
+    width: 33.3333%;
+    float: left;
+    text-align: center;
+}
+
+#cart .checkout,
+#order-btns .btn{
+    background: #f04c3f;
+    color: #f3f3f3;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 15px;
+    font-family: Verdana;
+}
+#cart a:hover,
+#order-btns a:hover{
+    background: #fa4235;
+}
+#main-bg {
+    width : 100%;
+    height : 390px;
+    background-position: 50% 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-image: url("#{resource['css:images/main-bg-green-grey.jpg']}");
+}
+.content {
+}
+.bg-light {
+    background-color: #deede8;
+}
+.bg-dark {
+    background-color: #d2e4de;
+}
+.capture {
+    width: 440px;
+    height: 85px;
+    margin: -75px 0 0;
+    padding: 20px 50px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: 70px;
+    font-size: 45px;
+    color: #404040;
+    background-color: rgba(71, 171, 140, 0.9);
+    float: left;
+}
+.main-menu {
+    margin: -50px 0 0 0;
+    width: 500px;
+    height: 70px;
+    padding: 20px 20px 10px;
+    background-color: #d2e4de;
+    float: left;
+}
+
+.main-menu a {
+    padding: 2px 5px;
+    margin-right: 5px;
+    max-width: 160px;
+    color: #549dc2;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 22px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-transition: all .2s;
+    -o-transition: all .2s;
+    transition: all .2s;
+    -webkit-transition: all .2s;
+    -moz-transition: all .2s;
+    -o-transition: all .2s;
+    -ms-transition: all .2s;
+    transition: all .2s;
+}
+.main-menu a:hover {
+    color: #549dc2;
+    background-color: #f3f3f3;
+}
+.item {
+    width: 490px;
+    margin: 20px 0 40px;
+    padding: 25px;
+    float: left;
+}
+.item-img-wrap {
+    overflow: hidden;
+    float: left;
+}
+.item-img-wrap img {
+    width: 214px;
+}
+.item-desc-wrap {
+    padding: 0 0 0 15px;
+    width: 261px;
+    text-align: center;
+    line-height: 16px;
+    font-size: 15px;
+    float: right;
+}
+.item-name {
+    margin: 0 0;
+    height: 34px;
+    line-height: 17px;
+    font-weight: 600;
+    color: #47ab8c;
+    overflow: hidden;
+}
+.item-desc {
+    height: 56px;
+    font-size: 13px;
+    line-height: 14px;
+    overflow: hidden;
+}
+.item-price {
+    font-size: 18px;
+    line-height: 20px;
+    font-weight: 600;
+}
+.item-weight {
+    font-size: 14px;
+    line-height: 15px;
+}
+.item-cart-button {
+    margin: 7px 0 0 0;
+    width: 180px;
+    height: 30px;
+    line-height: 27px;
+    background: #47ab8c;
+    color: #f3f3f3;
+    text-align: center;
+    float: right;
+}
+.item-cart-button a {
+    color: #f3f3f3;
+}
+.item-cart-button a:hover {
+    color: #f3f3f3;
+    background-color: #49cdae;
+}
+.put-button {
+    width: 100%;
+    height: 100%;
+    float: left;
+}
+.remove-button {
+    width: 40px;
+    height: 100%;
+    float: left;
+    display: inline-block;
+}
+.add-button {
+    width: 40px;
+    height: 100%;
+    float: right;
+    display: inline-block;
+}
+.cart-button-message {
+    width: 95px;
+    display: inline-block;
+}
+
+.orderDetails {
+    margin: 0 0 40px;
+    padding: 50px;
+    background-color: #deede8;
+}
+
+#orderForm .ui-datatable {
+    font-style: normal;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: Verdana;
+}
+#orderForm .ui-datatable .ui-widget-content,
+#orderForm .ui-datatable .ui-datatable-odd {
+    background: none;
+}
+#orderForm .ui-datatable tbody td,
+#orderForm .ui-datatable tfoot td,
+#orderForm .ui-datatable thead th {
+    padding: 0;
+}
+#orderForm table thead .ui-state-default,
+#orderForm table tfoot .ui-state-default{
+    background: #FAFAFA;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#orderForm .ui-widget-content,
+#orderForm .ui-datatable .ui-datatable-data td,
+#orderForm .ui-datatable .ui-datatable-data-empty td{
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+}
+#orderForm .ui-datatable tfoot td,
+#orderForm .ui-datatable thead th {
+    padding: 10px 0 10px 0;
+}
+
+.confirmed {
+    background-color: rgba(240, 240, 240, 0.3) !important;
+    background-image: none !important;
+}
+.item-del {
+    margin: 0 10px;
+    height: 40px;
+    width: 40px;
+}
+.item-del a {
+    height: 40px;
+    width: 40px;
+    display: inline-block;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-image: url("#{resource['css:images/x-mark-5-32.png']}");
+}
+.item-del a:hover {
+    background-image: url("#{resource['css:images/close-window-32.png']}");
+}
+.itemImg {
+    width: 100px;
+    padding: 10px 20px;
+}
+.itemImg img {
+    width: 100px;
+}
+.orderItemTitle {
+    color: #47ab8c;
+    font-weight: 800;
+    padding: 10px 0;
+    text-align: center;
+}
+.orderItemWeight {
+    width: 70px;
+    text-align: center;
+    padding: 10px;
+}
+.orderItemPrice {
+    width: 70px;
+    padding: 10px;
+    text-align: right;
+}
+.orderItemQuantity {
+    width: 80px;
+    padding: 5px 10px;
+    text-align: center;
+}
+.orderItemQuantity .quantity-select {
+    overflow: hidden;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: 0;
+    -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+}
+.orderItemQuantity .amount {
+    padding: 19px 0 20px 3px;
+    float: left;
+    width: 44px;
+    background: #eff5f6;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.orderItemQuantity .btns-wrap {
+    height: 100%;
+    border-left: 1px solid rgba(0,0,0,.1);
+    width: 32px;
+    float: right;
+    -webkit-border-radius: 0 4px 4px 0;
+    -moz-border-radius: 0 4px 4px 0;
+    border-radius: 0 4px 4px 0;
+    overflow: hidden;
+}
+.orderItemQuantity a {
+    color: #f3f3f3;
+    background: #47ab8c;
+    padding: 6px 10px 7px;
+    display: block;
+    line-height: 14px;
+    cursor: pointer;
+}
+.orderItemQuantity a:hover {
+    background-color: #49cdae;
+}
+.orderItemQuantity .minus-btn {
+    color: #f3f3f3;
+    background: #47ab8c;
+    padding: 6px 10px 7px;
+    display: block;
+    line-height: 14px;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+}
+.orderItemQuantity .ui-state-disabled {
+    opacity: .8;
+    filter: Alpha(Opacity=80);
+}
+.orderItemTotal {
+    margin-right: 20px;
+    width: 70px;
+    font-weight: 800;
+    padding: 10px;
+    text-align: right;
+}
+#order-btns {
+    margin: 20px auto;
+    width: 600px;
+    padding: 10px 20px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 14px;
+}
+.continue-order-btn {
+    width: 200px;
+    float: left;
+}
+.save-order-btn {
+    width: 200px;
+    float: right;
+}
+.t0 {
+    top: 0 !important;
+}
+.tm {
+    top: -60px !important;
+}
+.inputContainer {
+    padding: 0 10px;
+    margin: 0 auto;
+    color: #549dc2;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 22px;
+}
+.nameInputContainer {
+    width: 250px;
+}
+.tableInputContainer {
+    width: 220px;
+}
+.tableLable {
+    display: inline-block;
+    vertical-align: bottom;
+}
+.tableInput {
+    width: 60px;
+    text-align: left;
+}
+.main-menu .ui-inputfield {
+    color: #606060;
+    background: #eff5f6;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+.main-menu .ui-message-error {
+    color: #f04c3f;
+    background-color: transparent;
+    border: 0;
+    font-family: Verdana;
+    font-size: 13px;
+}

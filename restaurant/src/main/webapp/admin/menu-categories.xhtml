@@ -1,0 +1,118 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+    <ui:define name="title">Categories</ui:define>
+
+    <ui:define name="center">
+        <p:layoutUnit position="center">
+            <h:form id="categoriesForm">
+                <p:focus/>
+
+                <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+                <div class="contentContainer" style="width: 400px">
+
+                    <p:contextMenu for="categoriesTable" styleClass="ui-menu-my">
+                        <p:menuitem >
+                            <p:commandLink styleClass="ui-menuitem-link p0" process="@this"
+                                           actionListener="#{categoriesBackingBean.addCategory}">
+                                <h:outputText styleClass="ui-menuitem-icon ui-icon ui-icon-plus" />
+                                <h:outputText styleClass="ui-menuitem-text" value="Add"  />
+                                <p:ajax event="dialogReturn" update=":categoriesForm"
+                                        listener="#{categoriesBackingBean.onDialogReturn}" />
+                            </p:commandLink>
+                        </p:menuitem>
+                    </p:contextMenu>
+
+                    <p:dataTable id="categoriesTable" value="#{categoriesBackingBean.categories}"
+                                 var="menuCategory"
+                                 rowKey="#{menuCategory.id}"
+                                 selection="#{categoriesBackingBean.selectedMenuCategory}"
+                                 selectionMode="single"
+                                 editable="true"
+                                 rowStyleClass="#{menuCategory.active ? null : 'disabled'}" >
+
+                        <p:ajax event="rowEdit" listener="#{categoriesBackingBean.onEdit}"
+                                update=":categoriesForm:categoriesTable :categoriesForm:messages" />
+                        <p:ajax event="rowEditCancel" listener="#{categoriesBackingBean.onCancel}"
+                                update=":categoriesForm:messages" />
+
+                        <f:facet name="header">
+                            <div class="left">
+                                Categories
+                            </div>
+                            <div class="right">
+                                <p:commandButton id="refresher"
+                                                 actionListener="#{categoriesBackingBean.onRefreshCategory}"
+                                                 update="categoriesTable"
+                                                 icon="ui-icon-refresh" />
+                                <p:commandButton id="add"
+                                                 actionListener="#{categoriesBackingBean.addCategory}"
+                                                 update="categoriesTable"
+                                                 icon="ui-icon-plus" >
+                                    <p:ajax event="dialogReturn" update=":categoriesForm"
+                                            listener="#{categoriesBackingBean.onDialogReturn}" />
+                                </p:commandButton>
+                                <p:commandButton id="toggler"
+                                                 actionListener="#{categoriesBackingBean.onHideShowDisabled}"
+                                                 update="@this categoriesTable"
+                                                 value="#{categoriesBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                                 icon="ui-icon-calculator" />
+                            </div>
+                            <div class="cBoth"/>
+                        </f:facet>
+
+                        <p:column headerText="Title" style="width:50%">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{menuCategory.title}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{menuCategory.title}" style="width:100%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Position" style="width:20%"  styleClass="aCenter">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{menuCategory.priority}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{menuCategory.priority}" style="width:100%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Enabled" style="width:15%" styleClass="aCenter">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <p:selectBooleanCheckbox value="#{menuCategory.active}"
+                                                             disabled="true"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectBooleanCheckbox value="#{menuCategory.active}" />
+                                </f:facet>
+                            </p:cellEditor>
+
+                        </p:column>
+                        <p:column style="width:15%">
+                            <p:rowEditor />
+                        </p:column>
+
+                    </p:dataTable>
+
+                </div>
+
+            </h:form>
+        </p:layoutUnit>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,102 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/menuTmpl.xhtml">
+
+    <ui:define name="title">Yuris and Nata Menu</ui:define>
+
+    <ui:define name="content">
+
+        <f:metadata>
+            <f:viewParam name="menuCategoryId" value="#{menuBackingBean.currentMenuCategoryId}" />
+        </f:metadata>
+
+        <h:form id="menuForm" prependId="false">
+            <p:focus/>
+
+            <p:outputPanel id="cartOuterId" styleClass="updatable cartOuter" >
+                <p:outputPanel style="display:block" id="cart"
+                               rendered="#{!menuBackingBean.cartAndOrderEmpty}"
+                                >
+                    <span class="summary">#{menuBackingBean.summary}</span>
+
+                    <h:link value="#{menuBackingBean.checkout}" outcome="order" styleClass="checkout" />
+
+                    <span>#{menuBackingBean.total}</span>
+                </p:outputPanel>
+            </p:outputPanel>
+
+            <div id="main-bg" ></div>
+
+            <div id="container">
+
+                <p:outputPanel id="contentId" style="display:block" styleClass="content">
+                    <div class="capture">
+                        #{menuBackingBean.currentMenuCategory.title}
+                    </div>
+                    <div class="main-menu">
+                        <ui:repeat value="#{menuBackingBean.menuCategories}" var="menuCategory">
+                            <h:link value="#{menuCategory.title}" >
+                                <f:param value="#{menuCategory.id}" name="menuCategoryId" />
+                            </h:link>
+                            &nbsp;
+                        </ui:repeat>
+                    </div>
+                    <div style="clear: both;" />
+
+                    <p:outputPanel id="itemOuterId" styleClass="updatable" >
+                        <ui:repeat value="#{menuBackingBean.menuItems}" var="menuItem">
+                            <p:outputPanel style="display:block" styleClass="item #{menuBackingBean.changeBgTint ? 'bg-light' : 'bg-dark'}">
+                                <div class="item-img-wrap" >
+                                    <h:graphicImage library="images/gallery" name="#{menuItem.picture}" />
+                                </div>
+                                <div class="item-desc-wrap" >
+                                    <div class="item-name" >
+                                        #{menuItem.title}
+                                    </div>
+                                    <div class="item-desc">
+                                        #{menuItem.description}
+                                    </div>
+                                    <div class="">
+                                        <span class="item-measure">#{menuItem.measure}</span>
+                                        &nbsp;|&nbsp;
+                                        <span class="item-price">#{menuItem.prettyPrice} &nbsp;&#8372;</span>
+                                    </div>
+                                </div>
+                                <p:outputPanel id="itemcartbuttonId" style="display:block"
+                                               styleClass="item-cart-button"
+                                               rendered="#{!menuBackingBean.isItemInCart(menuItem)}" >
+                                    <p:commandLink value="Add To Cart" styleClass="put-button"
+                                                   action="#{menuBackingBean.addItem(menuItem)}"
+                                                   update="@(.updatable)" />
+                                </p:outputPanel>
+                                <p:outputPanel id="itemcartbuttonEId" style="display:block"
+                                               styleClass="item-cart-button"
+                                               rendered="#{menuBackingBean.isItemInCart(menuItem)}" >
+                                    <p:commandLink value="-" styleClass="remove-button"
+                                                   action="#{menuBackingBean.takeItem(menuItem)}"
+                                                   update="@(.updatable)" />
+                                <span class="cart-button-message" >
+                                    #{menuBackingBean.getItemNumberInCart(menuItem)} in Cart
+                                </span>
+                                    <p:commandLink value="+" styleClass="add-button"
+                                                   action="#{menuBackingBean.addItem(menuItem)}"
+                                                   update="@(.updatable)" />
+                                </p:outputPanel>
+                                <div style="clear: both;" />
+                            </p:outputPanel>
+                        </ui:repeat>
+                    </p:outputPanel>
+
+                    <div style="clear: both;" />
+                </p:outputPanel>
+            </div>
+
+        </h:form>
+
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,156 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+    <ui:define name="title">Security officer</ui:define>
+
+    <ui:define name="center">
+        <p:layoutUnit position="center">
+
+            <h:form id="accountsForm">
+                <p:focus/>
+
+                <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+                <div class="m10Center" style="width: 700px">
+
+                    <p:dataTable id="accountsTable" value="#{accountsBackingBean.accounts}" var="account"
+                                 rowKey="#{account.id}"
+                                 editable="true" rowStyleClass="#{account.active ? null :
+                                  'disabled'}" >
+
+                        <p:ajax event="rowEdit" listener="#{accountsBackingBean.onEdit}" update=":accountsForm:accountsTable :accountsForm:messages" />
+                        <p:ajax event="rowEditCancel" listener="#{accountsBackingBean.onCancel}" update=":accountsForm:messages" />
+
+                        <f:facet name="header">
+                            <div class="left">
+                                Accounts
+                            </div>
+                            <div class="right">
+                                <p:commandButton id="refresher"
+                                                 actionListener="#{accountsBackingBean.onRefreshAccounts}"
+                                                 update="accountsTable"
+                                                 icon="ui-icon-refresh"
+                                        />
+                                <p:button id="add"
+                                          update="accountsTable"
+                                          icon="ui-icon-plus"
+                                          outcome="add-account"
+                                        />
+                                <p:commandButton id="toggler"
+                                                 actionListener="#{accountsBackingBean.onHideShowDisabled}"
+                                                 update="@this accountsTable"
+                                                 value="#{accountsBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                                 icon="ui-icon-calculator" />
+                            </div>
+                            <div class="cBoth"/>
+                        </f:facet>
+
+                        <p:column headerText="First name" style="width:20%">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{account.firstName}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{account.firstName}" style="width:100%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Last name" style="width:20%">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{account.lastName}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{account.lastName}" style="width:100%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Username" style="width:15%">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{account.username}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{account.username}" style="width:100%"
+                                                  />
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Password" style="width:20%">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{account.password}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{account.password}" style="width:100%"
+                                            required="true" requiredMessage="Empty passwords is not allowed"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Roles" style="width:25%">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{account.roleNames}" />
+                                </f:facet>
+                                <f:facet name="input">
+
+                                    <p:selectManyMenu
+                                            value="#{account.roles}"  converter="#{roleConverter}"
+                                            >
+                                        <f:selectItems
+                                                value="#{accountsBackingBean.roles}"  var="role"
+                                                itemLabel="#{role.name}"  itemValue="#{role}" />
+                                    </p:selectManyMenu>
+
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Enabled" style="width:5%" styleClass="aCenter">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <p:selectBooleanCheckbox value="#{account.active}" disabled="true"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectBooleanCheckbox value="#{account.active}" />
+                                </f:facet>
+                            </p:cellEditor>
+
+                        </p:column>
+                        <p:column style="width:15%">
+                            <p:rowEditor />
+                        </p:column>
+
+                    </p:dataTable>
+
+                </div>
+
+            </h:form>
+        </p:layoutUnit>
+    </ui:define>
+
+    <ui:define name="south">
+    <p:layoutUnit position="south" size="150"
+                  header="Generate"
+                  resizable="false" closable="false" collapsible="true" collapsed="true"
+                  styleClass="admin"
+            >
+
+    <h:form id="generateForm" prependId="false">
+        <p:commandButton value="Generate" actionListener="#{generateBackingBean.serviceGenerate}" />
+    </h:form>
+
+    </p:layoutUnit>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,483 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+<ui:define name="title">Cashier</ui:define>
+
+<ui:define name="west">
+    <p:layoutUnit position="west" size="315"
+                  header="#{waiterBackingBean.waiter.firstName}'s orders"
+                  resizable="false" closable="false" collapsible="true"
+                  styleClass="admin"
+            >
+        <h:form id="waiterOrdersForm" prependId="false">
+            <p:focus/>
+
+            <p:dataTable id="waiterOrdersTable" value="#{waiterBackingBean.waiterOrders}" var="order"
+                         selectionMode="single" selection="#{waiterBackingBean.selectedOrder}"
+                         rowKey="#{order.id}">
+
+                <p:ajax event="rowSelect" listener="#{waiterBackingBean.onRowSelect}" update=":waiterOrderForm" />
+
+                <f:facet name="header">
+                    <div class="left">
+
+                    </div>
+                    <div id="waiterButtons" class="right">
+                        <p:commandButton id="addOrder"
+                                         actionListener="#{waiterBackingBean.onAddWaiterOrder}"
+                                         update="@form :waiterOrderForm"
+                                         icon="ui-icon-plusthick" />
+                        <p:selectOneMenu value="#{waiterBackingBean.selectedOrderStatus}">
+                            <f:selectItems value="#{waiterBackingBean.statuses}"
+                                           var="status"
+                                           itemValue="#{status}"
+                                           itemLabel="#{status.label}"
+                                    />
+                            <p:ajax listener="#{waiterBackingBean.serviceStateChange()}" update="@form" />
+                        </p:selectOneMenu>
+                        <p:commandButton id="toggler"
+                                         actionListener="#{waiterBackingBean.onHideShowDisabled}"
+                                         update="@form"
+                                         value="#{waiterBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                         icon="ui-icon-calculator" />
+                    </div>
+                    <div class="cBoth"/>
+                </f:facet>
+
+                <p:column>
+                    <div class="order #{order.active ? 'orderEnabled' : 'orderDisabled'}">
+
+                        <div class="left orderNmberLabel" >
+                            <h:outputText value="#{order.number} &nbsp;" styleClass="" />
+                        </div>
+
+                        <div class="right" >
+                            <div class="statusIcon #{waiterBackingBean.getOrderStatusColorClass(order)}" />
+
+                        </div>
+
+                        <div class="right orderTimeLabel">
+                            <h:outputText styleClass="" value="#{order.orderTimeInDateFormat}" rendered="#{!order.newEntity}">
+                                <f:convertDateTime dateStyle="full" pattern="dd.MM.yyyy"/>
+                            </h:outputText>
+                            <h:outputText value=" at " styleClass="orderLabel" />
+                            <h:outputText styleClass="" value="#{order.orderTimeInDateFormat}" rendered="#{!order.newEntity}">
+                                <f:convertDateTime dateStyle="full" pattern="HH:mm"/>
+                            </h:outputText>
+                            &nbsp;&nbsp;
+                        </div>
+
+                        <div class="cBoth" />
+
+                        <div class="orderClientLabel" >
+                            <h:outputText value="Guest: &nbsp;" styleClass="orderLabel" />
+                            <h:outputText value="#{order.guestPreciseName} &nbsp;" />
+                        </div>
+
+                        <div class="orderTotalLabel" >
+                            <h:outputText value="Ordered: &nbsp;" styleClass="orderLabel" />
+                            <h:outputText value="#{order.orderDetails.size()} &nbsp;" />
+                            <h:outputText value="item(s) for " styleClass="orderLabel" />
+                            <h:outputText value="#{order.total} &nbsp;" />
+                            <h:outputText value="&#8372;" styleClass="orderLabel" />
+                        </div>
+
+                        <div class="orderWaiterLabel" >
+                            <h:outputText value="Waiter: &nbsp;" styleClass="orderLabel" />
+                            <h:outputText value="#{order.waiter.fullName}" />
+                        </div>
+
+                    </div>
+                </p:column>
+            </p:dataTable>
+
+        </h:form>
+
+    </p:layoutUnit>
+</ui:define>
+
+<ui:define name="center">
+    <p:layoutUnit position="center" style="border: none">
+        <h:form id="waiterOrderForm" >
+            <p:outputPanel rendered="#{waiterBackingBean.editableOrder != null}" >
+
+                <p:focus/>
+
+                <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+                <p:poll interval="30" listener="#{waiterBackingBean.onCookedCheck}" />
+
+                <div >
+
+                    <div class="orderInfoContainer m10Center" >
+
+                        <div class="left orderNmberLabel p5p10" >
+                            <h:outputText value="#{waiterBackingBean.editableOrder.number} &nbsp;" styleClass="" />
+                        </div>
+
+
+                        <div class="right orderTimeLabel p5p10">
+                            <h:outputText value="#{waiterBackingBean.editableOrder.orderTimeInDateFormat}" >
+                                <f:convertDateTime dateStyle="full" pattern="dd.MM.yyyy"/>
+                            </h:outputText>
+                            <h:outputText value=" at " styleClass="orderLabel" />
+                            <h:outputText value="#{waiterBackingBean.editableOrder.orderTimeInDateFormat}" >
+                                <f:convertDateTime dateStyle="full" pattern="HH:mm"/>
+                            </h:outputText>
+                            &nbsp;&nbsp;
+                        </div>
+
+                        <div class="cBoth" />
+
+                        <div class="left p5p10">
+                            <h:outputText styleClass="orderLabel" value="Name: "/>
+                            <p:inputText id="customerName"
+                                         value="#{waiterBackingBean.editableOrder.guestName}"
+                                         maxlength="30" style="width: 140px;"
+                                    />
+                        </div>
+
+                        <div id="orderTable" class="left p5p10">
+                            <h:outputText styleClass="orderLabel" value="Table:  "/>
+                            <p:selectOneMenu value="#{waiterBackingBean.editableOrder.restaurantTable}"
+                                             converter="#{restaurantTableConverter}"
+                                             styleClass="aLeft"
+                                    >
+                                <f:selectItems value="#{waiterBackingBean.restaurantTables}"
+                                               var="table"
+                                               itemLabel="#{table.tableNumber}"
+                                               itemValue="#{table}"
+                                        />
+                            </p:selectOneMenu>
+                        </div>
+
+                        <p:outputPanel rendered="#{!waiterBackingBean.paid}">
+                            <div id="orderStatus" class="left p5p10">
+                                <h:outputText styleClass="orderLabel" value="Status: "/>
+                                <p:selectOneMenu value="#{waiterBackingBean.editableOrder.status}">
+                                    <f:selectItems value="#{waiterBackingBean.restrictedStatuses}"
+                                                   var="status"
+                                                   itemValue="#{status}"
+                                                   itemLabel="#{status.label}"
+                                            />
+                                </p:selectOneMenu>
+                            </div>
+                        </p:outputPanel>
+                        <p:outputPanel rendered="#{waiterBackingBean.paid}">
+                            <div id="orderStatusFull" class="left p5p10">
+                                <h:outputText styleClass="orderLabel" value="Status: "/>
+                                <p:selectOneMenu value="#{waiterBackingBean.editableOrder.status}"
+                                                 disabled="true">
+                                    <f:selectItems value="#{waiterBackingBean.statuses}"
+                                                   var="status"
+                                                   itemValue="#{status}"
+                                                   itemLabel="#{status.label}"
+                                            />
+                                </p:selectOneMenu>
+                            </div>
+                        </p:outputPanel>
+
+                        <div class="cBoth" />
+
+
+                        <div class="commentsInputContainer  p5p10">
+                            <h:outputText  styleClass="orderLabel" value="Comments"/>
+                            <p:inputTextarea styleClass="" value="#{waiterBackingBean.editableOrder.comments}"
+                                             rows="2" cols="60" style="width: 100%;"/>
+                        </div>
+
+                        <div id="orderWaiter" class="left p5p10">
+                            <h:outputText styleClass="orderLabel" value="Waiter: "/>
+                            <p:selectOneMenu value="#{waiterBackingBean.editableOrder.waiter}"
+                                             converter="#{waiterConverter}"
+                                             styleClass="aLeft"
+                                             disabled="#{sec:areNotGranted('PERM_ADMIN_ORDERS')}"
+                                    >
+                                <f:selectItems value="#{waiterBackingBean.waiters}"
+                                               var="waiter"
+                                               itemLabel="#{waiter.fullName}"
+                                               itemValue="#{waiter}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <p:commandButton
+                                styleClass="right"
+                                value="Print"
+                                action="#{waiterBackingBean.onPrint}"
+                                update="@form :waiterOrdersForm"
+                                >
+                        </p:commandButton>
+                        <p:commandButton
+                                styleClass="right"
+                                icon="ui-icon-refresh"
+                                action="#{waiterBackingBean.onRefreshOrder}"
+                                update=":waiterOrderForm :waiterOrdersForm"
+                                >
+                        </p:commandButton>
+                        <div class="cBoth" />
+
+                    </div>
+
+                    <div class="orderItemsContainer mCenter" >
+                        <h:panelGroup id="re" styleClass="updatable-table">
+                            <p:dataTable id="orderInfosTable"
+                                         value="#{waiterBackingBean.editableOrder.orderDetails}"
+                                         var="orderDetail" rowKey="#{orderDetail.id}"
+                                         rendered="#{not empty waiterBackingBean.editableOrder.orderDetails}"
+                                         rowStyleClass="confirmed">
+
+                                <p:column style="width: 50px">
+                                    <p:outputPanel style="display:block" styleClass="item-del"
+                                                   rendered="#{orderDetail.newEntity}">
+                                        <p:commandLink value="" styleClass=""
+                                                       action="#{waiterBackingBean.onRemoveMenuItem(orderDetail)}"
+                                                       process="@this"
+                                                       update="@(.updatable-table)"
+                                                />
+                                    </p:outputPanel>
+                                </p:column>
+
+                                <p:column style="width: 90px">
+                                    <div class="itemImgSmall" >
+                                        <h:graphicImage library="images/gallery" name="#{orderDetail.menuItem.picture}" width="70"/>
+                                    </div>
+                                </p:column>
+
+                                <p:column style="width: 340px">
+                                    <f:facet name="header">Dish</f:facet>
+                                    <div class="orderItemTitle">
+                                        <h:outputText id="menuItemTitle" value="#{orderDetail.menuItem.title} " />
+                                    </div>
+                                </p:column>
+
+                                <p:column style="width: 60px">
+                                    <f:facet name="header">Quantity</f:facet>
+                                    <div class="orderItemQuantity" >
+                                        <h:outputText id="menuItemQuantity" styleClass="" value="#{orderDetail.itemQuantity}"/>
+                                    </div>
+                                    <div class="changeQuantityButtons" >
+                                        <p:commandButton
+                                                styleClass="minusItemButton left"
+                                                actionListener="#{waiterBackingBean.onTakeMenuItem(orderDetail)}"
+                                                update="@(.updatable-table)"
+                                                icon="ui-icon-minus"
+                                                rendered="#{orderDetail.newEntity}"
+                                                disabled="#{!waiterBackingBean.isRemovePossible(orderDetail)}"
+                                                >
+                                            <f:setPropertyActionListener value="#{orderDetail}"
+                                                                         target="#{waiterBackingBean.selectedOrderDetail}"
+                                                    />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                                styleClass="plusItemButton right"
+                                                actionListener="#{waiterBackingBean.onAddMenuItem(orderDetail)}"
+                                                update="@(.updatable-table)"
+                                                icon="ui-icon-plus"
+                                                rendered="#{orderDetail.newEntity}"
+                                                >
+                                            <f:setPropertyActionListener value="#{orderDetail}"
+                                                                         target="#{waiterBackingBean.selectedOrderDetail}"
+                                                    />
+                                        </p:commandButton>
+                                        <div class="cBoth" />
+                                    </div>
+                                    <f:facet name="footer">Total: </f:facet>
+                                </p:column>
+
+                                <p:column style="width: 90px">
+                                    <f:facet name="header">Price</f:facet>
+                                    <div class="orderItemPrice" >
+                                        <h:outputText id="menuItemPrice" styleClass=""
+                                                      value="#{orderDetail.itemQuantity*orderDetail.prettyPrice}  &nbsp;&#8372;" />
+                                    </div>
+                                    <f:facet name="footer">#{waiterBackingBean.editableOrder.total}</f:facet>
+                                </p:column>
+
+                                <p:column style="width: 30px">
+                                    <f:facet name="header">Done</f:facet>
+                                    <div class="orderItemQuantity" >
+                                        <p:selectBooleanCheckbox value="#{orderDetail.cooked}" disabled="true"/>
+                                    </div>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </div>
+
+                    <div class="buttonsContainer m20Center ">
+                        <p:commandButton
+                                styleClass="left"
+                                value="Cancel"
+                                actionListener="#{waiterBackingBean.onCancel}"
+                                update="@form"
+                                >
+                        </p:commandButton>
+                        <p:commandButton
+                                styleClass="right"
+                                value="Save"
+                                actionListener="#{waiterBackingBean.onSave}"
+                                update="@form :waiterOrdersForm"
+                                >
+                        </p:commandButton>
+                        <div class="cBoth" />
+                    </div>
+
+                </div>
+            </p:outputPanel>
+        </h:form>
+    </p:layoutUnit>
+</ui:define>
+
+<ui:define name="east">
+    <p:layoutUnit position="east" size="250"
+                  header="Menu"
+                  resizable="false" closable="false" collapsible="true"
+                  styleClass="admin"
+            >
+
+        <h:form id="menuForm" prependId="false">
+            <p:focus/>
+
+            <div>
+                <div class="right">
+                    <p:commandButton id="backButton"
+                                     actionListener="#{waiterBackingBean.onBack}"
+                                     update="@form"
+                                     icon="ui-icon-arrowreturnthick-1-n"
+                                     disabled="#{waiterBackingBean.selectedMenuCategory == null}"
+                            />
+                </div>
+                <div class="cBoth"/>
+            </div>
+
+            <p:outputPanel rendered="#{waiterBackingBean.selectedMenuCategory == null}">
+                <ui:repeat value="#{waiterBackingBean.categories}"
+                           var="menuCategory"
+                        >
+
+                    <div class="p10">
+                        <div class="imgContainer" >
+                            <p:commandLink
+                                    actionListener="#{waiterBackingBean.serviceCategoryChosen(menuCategory)}"
+                                    update="@form"
+                                    >
+                                <h:graphicImage library="images/gallery" name="default.jpg" width="160"/>
+                                <div class="imgLabel">
+                                    #{menuCategory.title}
+                                </div>
+                            </p:commandLink>
+                        </div>
+
+                    </div>
+
+                </ui:repeat>
+            </p:outputPanel>
+
+            <p:outputPanel rendered="#{waiterBackingBean.selectedMenuCategory != null}">
+                <ui:repeat value="#{waiterBackingBean.menuItems}"
+                           var="menuItem"
+                        >
+
+                    <div class="p10">
+                        <div class="imgContainer" >
+                            <p:commandLink
+                                    actionListener="#{waiterBackingBean.serviceMenuItemChosen(menuItem)}"
+                                    update="@form :waiterOrderForm:re"
+                                    >
+                                <h:graphicImage library="images/gallery" name="#{menuItem.picture}" width="160"/>
+                                <div class="imgLabel">
+                                    #{menuItem.title}
+                                </div>
+                            </p:commandLink>
+                        </div>
+
+                    </div>
+
+                </ui:repeat>
+            </p:outputPanel>
+
+        </h:form>
+
+    </p:layoutUnit>
+</ui:define>
+
+<ui:define name="south">
+    <p:layoutUnit position="south" size="150"
+                  header="Pending orders"
+                  resizable="false" closable="false" collapsible="true" collapsed="true"
+                  styleClass="admin"
+            >
+
+        <h:form id="nobodyOrdersForm" prependId="false">
+
+            <p:growl id="nmessages" showDetail="true" showSummary="false"/>
+
+            <p:poll interval="30" listener="#{waiterBackingBean.onNoMansOrdersCheck}" />
+
+            <ui:repeat value="#{waiterBackingBean.nobodyOrders}" var="order">
+                <div class="left nobodyOrderContainer" >
+
+                    <div class="order orderEnabled">
+
+                        <div class="left orderNmberLabel" >
+                            <h:outputText value="#{order.number} &nbsp;" styleClass="" />
+                        </div>
+
+                        <div class="right">
+                            <p:commandButton
+                                    icon="ui-icon-circle-arrow-s"
+                                    actionListener="#{waiterBackingBean.acceptOrder(order)}"
+                                    update="@form :waiterOrdersForm"
+                                    >
+
+                            </p:commandButton>
+                        </div>
+
+                        <div class="right orderTimeLabel">
+                            <h:outputText styleClass="" value="#{order.orderTimeInDateFormat}" >
+                                <f:convertDateTime dateStyle="full" pattern="dd.MM.yyyy"/>
+                            </h:outputText>
+                            <h:outputText value=" at " styleClass="orderLabel" />
+                            <h:outputText styleClass="" value="#{order.orderTimeInDateFormat}" >
+                                <f:convertDateTime dateStyle="full" pattern="HH:mm"/>
+                            </h:outputText>
+                            &nbsp;&nbsp;
+                        </div>
+
+                        <div class="cBoth" />
+
+                        <div class="orderClientLabel" >
+                            <h:outputText value="Guest: &nbsp;" styleClass="orderLabel" />
+                            <h:outputText value="#{order.guestPreciseName} &nbsp;" />
+                        </div>
+
+                        <div class="orderTotalLabel" >
+                            <h:outputText value="Ordered: &nbsp;" styleClass="orderLabel" />
+                            <h:outputText value="#{order.orderDetails.size()} &nbsp;" />
+                            <h:outputText value="item(s) for " styleClass="orderLabel" />
+                            <h:outputText value="#{order.total} &nbsp;" />
+                            <h:outputText value="&#8372;" styleClass="orderLabel" />
+                        </div>
+
+                        <div class="orderWaiterLabel" >
+                            <h:outputText value="Waiter: &nbsp;" styleClass="orderLabel" />
+                            <h:outputText value="#{order.waiter.firstName}&nbsp;#{order.waiter.lastName}" />
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </ui:repeat>
+        </h:form>
+
+    </p:layoutUnit>
+</ui:define>
+
+</ui:composition>

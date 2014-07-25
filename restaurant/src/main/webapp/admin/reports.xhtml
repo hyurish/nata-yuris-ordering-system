@@ -1,0 +1,197 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+    <ui:define name="title">Orders</ui:define>
+
+    <ui:define name="west">
+        <p:layoutUnit position="west" size="0"
+                      resizable="false" closable="false" collapsible="true"
+                      styleClass="admin"
+                >
+
+        </p:layoutUnit>
+    </ui:define>
+
+
+    <ui:define name="center">
+        <p:layoutUnit position="center">
+
+            <h:form id="reportsForm">
+
+                <p:growl id="messages" showDetail="true"/>
+
+                <div class="orderInfoContainer m10Center" >
+
+                    <div class="left p5p10" >
+                        <h:outputText value=" From " styleClass="orderLabel" />
+                        <p:calendar
+                                value="#{reportsBackingBean.fromDate}"
+                                required="true"
+                                pattern="dd-MM-yyyy"
+                                />
+                    </div>
+
+                    <div class="right p5p10" >
+                        <h:outputText value=" to " styleClass="orderLabel" />
+                        <p:calendar
+                                value="#{reportsBackingBean.toDate}"
+                                pattern="dd-MM-yyyy"
+                                maxdate="07-10-2014"
+                                />
+                    </div>
+                    <div class="cBoth" />
+
+                </div>
+
+                <div class="buttonsContainer m20Center aCenter">
+                    <p:commandButton
+                            styleClass="left"
+                            value="Revenue for the period"
+                            actionListener="#{reportsBackingBean.onRevenueForPeriod}"
+                            update="@form"
+                            >
+                    </p:commandButton>
+                    <p:commandButton
+                            styleClass="right"
+                            value="Popular dishes"
+                            actionListener="#{reportsBackingBean.onPopularDishes}"
+                            update="@form"
+                            >
+                    </p:commandButton>
+                    <div class="cBoth" />
+
+                </div>
+
+                <div class="orderItemsContainer mCenter p10" >
+                    <p:dataTable id="revenueReportTable"
+                                 value="#{reportsBackingBean.revenueReports}"
+                                 var="result"
+                                 rendered="#{reportsBackingBean.revenueReports != null}"
+                                 rowStyleClass="confirmed">
+
+                        <p:column style="width: 40%" sortBy="#{result.orderDate}">
+                            <f:facet name="header">Date</f:facet>
+                            <div class="reportTableCell mCenter aCenter">
+                                <h:outputText value="#{result.orderDate}" >
+                                    <f:convertDateTime dateStyle="full" pattern="dd.MM.yyyy"/>
+                                </h:outputText>
+                            </div>
+                            <f:facet name="footer">Total: </f:facet>
+                        </p:column>
+
+                        <p:column style="width: 30%" sortBy="#{result.ordersNumber}">
+                            <f:facet name="header">Order Quantity</f:facet>
+                            <div class="reportTableCell mCenter aCenter" >
+                                <h:outputText value="#{result.ordersNumber}"/>
+                            </div>
+                            <f:facet name="footer">
+                                <div class="reportTableCell p5p10 aCenter" >
+                                    #{reportsBackingBean.totalOrdersNumber}
+                                </div>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column style="width: 30%" sortBy="#{result.prettyRevenue}">
+                            <f:facet name="header">Revenue</f:facet>
+                            <div class="reportTableCell mCenter aRight" >
+                                <h:outputText value="#{result.prettyRevenue}"/>
+                            </div>
+                            <f:facet name="footer" >
+                                <div class="reportTableCell p5p10 aRight" >
+                                    #{reportsBackingBean.totalPrettyRevenue}
+                                </div>
+
+                            </f:facet>
+                        </p:column>
+
+                    </p:dataTable>
+
+                    <p:dataTable
+                            id="popularDishesRevenueReportTable"
+                            value="#{reportsBackingBean.popularDishesReportWrappers}"
+                                 var="popularDishesOfCategoryResult"
+                                 rendered="#{reportsBackingBean.popularDishesReportWrappers != null}"
+                                 rowStyleClass="confirmed">
+
+
+                        <p:columnGroup type="header">
+                            <p:row>
+                                <p:column headerText="Menu Item" />
+                                <p:column headerText="Quantity" />
+                                <p:column headerText="Revenue" />
+                            </p:row>
+                        </p:columnGroup>
+
+                        <p:subTable
+                                value="#{popularDishesOfCategoryResult.popularDishesReports}"
+                                    var="pDRResult"
+                                >
+
+                            <f:facet name="header">
+                                <div class="reportTableCell p5p10 aLeft">
+                                    <h:outputText
+                                            value="#{popularDishesOfCategoryResult.categoryTitle}" />
+                                </div>
+                            </f:facet>
+
+                            <p:column style="width: 65%">
+                                <div class="reportTableCell mCenter aLeft">
+                                    <h:outputText value="#{pDRResult.menuItemTitle}" />
+                                </div>
+                                <f:facet name="footer">Total: </f:facet>
+                            </p:column>
+
+                            <p:column style="width: 15%">
+                                <div class="reportTableCell mCenter aCenter" >
+                                    <h:outputText value="#{pDRResult.menuItemQuantity}"/>
+                                </div>
+                            </p:column>
+
+                            <p:column style="width: 20%">
+                                <div class="reportTableCell mCenter aRight" >
+                                    <h:outputText value="#{pDRResult.prettyRevenue}"/>
+                                </div>
+                            </p:column>
+
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Totals: "  styleClass="aRight"/>
+                                    <p:column
+                                            footerText="#{popularDishesOfCategoryResult.totalQuantity}"
+                                              styleClass="reportTableCell p5p10 aCenter" />
+                                    <p:column
+                                            footerText="#{popularDishesOfCategoryResult.totalRevenue}"
+                                              styleClass="reportTableCell p5p10 aRight" />
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:subTable>
+
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column footerText="Totals: " style="text-align: right;"/>
+                                <p:column footerText="#{reportsBackingBean.totalMenuItemsNumber}"
+                                          styleClass="reportTableCell p5p10 aCenter" />
+                                <p:column
+                                        footerText="#{reportsBackingBean.totalMenuItemsPrettyRevenue}"
+                                        styleClass="reportTableCell p5p10"
+                                        style="text-align: right;"/>
+                            </p:row>
+                        </p:columnGroup>
+
+                    </p:dataTable>
+                </div>
+
+            </h:form>
+        </p:layoutUnit>
+    </ui:define>
+
+
+</ui:composition>

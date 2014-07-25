@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:sec="http://www.springframework.org/security/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+<f:view contentType="text/html">
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title><ui:insert name="title" /></title>
+        <h:outputStylesheet library="css" name="style.css"/>
+    </h:head>
+    <h:body styleClass="admin">
+
+            <p:layout fullPage="true" >
+
+                <ui:insert name="north">
+                    <p:layoutUnit position="north" size="45"
+                                  resizable="false" closable="false" collapsible="true"
+                            >
+
+                        <h:form id="topMenuForm" styleClass="left" >
+                            <sec:authorize access="hasAnyRole('PERM_CREATE_ORDERS')">
+                                <p:commandButton value="Cashier desk"
+                                                 action="/cashier-desk/waiter.xhtml?faces-redirect=true"
+                                                 styleClass="m5Side"
+                                        />
+                            </sec:authorize>
+                            <sec:authorize access="hasAnyRole('PERM_ADMIN_MENU_ITEMS')">
+                                <p:commandButton value="Menu Categories"
+                                                 action="/admin/menu-categories.xhtml?faces-redirect=true"
+                                                 styleClass="m5Side"
+                                        />
+                            </sec:authorize>
+                            <sec:authorize access="hasAnyRole('PERM_ADMIN_MENU_ITEMS')">
+                                <p:commandButton value="Menu Items"
+                                                 action="/admin/menu-items.xhtml?faces-redirect=true"
+                                                 styleClass="m5Side"
+                                        />
+                            </sec:authorize>
+                            <sec:authorize access="hasAnyRole('PERM_ADMIN_ORDERS')">
+                                <p:commandButton value="Orders"
+                                                 action="/admin/orders.xhtml?faces-redirect=true"
+                                                 styleClass="m5Side"
+                                        />
+                            </sec:authorize>
+                            <sec:authorize access="hasAnyRole('PERM_UPDETE_COOCED_ITEMS','PERM_ADMIN_ORDERS')">
+                                <p:commandButton value="Kitchen"
+                                                 action="/kitchen/cook.xhtml?faces-redirect=true"
+                                                 styleClass="m5Side"
+                                        />
+                            </sec:authorize>
+                            <sec:authorize access="hasAnyRole('PERM_ADMIN_REPORTS')">
+                                <p:commandButton value="Reports"
+                                                 action="/admin/reports.xhtml?faces-redirect=true"
+                                                 styleClass="m5Side"
+                                        />
+                            </sec:authorize>
+                            <sec:authorize access="hasAnyRole('PERM_ADMIN_ACCOUNTS')">
+                                <p:commandButton value="Accounts"
+                                                 action="/security/security-officer.xhtml?faces-redirect=true"
+                                                 styleClass="m5Side"
+                                        />
+                            </sec:authorize>
+                        </h:form>
+
+                        <h:form id="loginForm" prependId="false" styleClass="right" >
+                            #{request.userPrincipal.name}
+                            <sec:authorize access="isAnonymous()">
+                                <h:outputLabel for="j_username" value="User: " />
+                                <p:inputText id="j_username" required="true" label="username" />
+
+                                <h:outputLabel for="j_password" value="Password: " />
+                                <p:password id="j_password" label="password" required="true" />
+                                &nbsp;
+                                <p:commandButton value="Log in" update="@form"
+                                                 action="#{loginBackingBean.doLogin}"
+                                                 ajax="false"/>
+                            </sec:authorize>
+
+                            <sec:authorize access="isAuthenticated()">
+                                <p:commandButton id="logout" value="Log out" update="@form"
+                                                 action="#{loginBackingBean.doLogout}"
+                                                 ajax="false" />
+                            </sec:authorize>
+                        </h:form>
+
+                        <div class="cBoth" />
+
+                    </p:layoutUnit>
+                </ui:insert>
+
+                <ui:insert name="south">
+                    <p:layoutUnit position="south" size="50"
+                                  resizable="false" closable="false" collapsible="true"
+                                  styleClass="admin"
+                            >
+
+                    </p:layoutUnit>
+                </ui:insert>
+
+                <ui:insert name="west">
+                    <p:layoutUnit position="west" size="200"
+                                  resizable="false" closable="false" collapsible="true"
+                                  styleClass="admin"
+                            >
+
+                    </p:layoutUnit>
+                </ui:insert>
+
+
+                <ui:insert name="east">
+                    <p:layoutUnit position="east" size="200"
+                                  resizable="false" closable="false" collapsible="true"
+                                  styleClass="admin"
+                            >
+
+                    </p:layoutUnit>
+                </ui:insert>
+
+                <ui:insert name="center">
+                    <p:layoutUnit position="center"
+                                  styleClass="admin"
+                            >
+
+                    </p:layoutUnit>
+                </ui:insert>
+            </p:layout>
+
+    </h:body>
+</f:view>
+</html>

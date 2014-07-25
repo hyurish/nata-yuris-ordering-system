@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>New Category</title>
+    <h:outputStylesheet library="css" name="style.css"/>
+</h:head>
+
+<h:body styleClass="admin">
+
+    <h:form prependId="false">
+        <p:focus/>
+        <div style="width: 400px; margin: 0 auto;">
+            <h:panelGrid>
+                <h:outputText value="Category title * :" />
+                <p:inputText id="categoryTitle"  value="#{addCategoryBackingBean.categoryTitle}"
+                             required="true" maxlength="30"/>
+                <p:message for="categoryTitle" />
+            </h:panelGrid>
+            <div>
+
+            </div>
+            <div class="whiteContainer marginT20">
+                <p:commandButton styleClass="left" value="Cancel" immediate="true"
+                                 actionListener="#{addCategoryBackingBean.onCancelAction}" />
+                <p:commandButton styleClass="right" value="Save"
+                                 actionListener="#{addCategoryBackingBean.onSaveAction}" />
+                <div class="cBoth"></div>
+            </div>
+        </div>
+    </h:form>
+</h:body>
+
+</html>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:sec="http://www.springframework.org/security/tags"
+      xmlns:p="http://primefaces.org/ui">
+<f:view contentType="text/html">
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title><ui:insert name="title" /></title>
+        <h:outputStylesheet library="css" name="style.css"/>
+    </h:head>
+    <h:body>
+        <div class="container">
+
+            <div id="header">
+                <h:form id="mainMenuForm" prependId="false">
+                    <div class="contentContainer" >
+                    <div class="whiteContainer">
+                        <h:messages globalOnly="true"/>
+                        <div class="left">
+                            <h:link value="Home" outcome="/menu.xhtml" />&nbsp;
+                        </div>
+                        <div class="right" >
+                            #{request.userPrincipal.name}
+                            <sec:authorize access="isAnonymous()">
+                                <h:outputLabel for="j_username" value="User: " />
+                                <p:inputText id="j_username" required="true" label="username" />
+
+                                <h:outputLabel for="j_password" value="Password: " />
+                                <p:password id="j_password" label="password" required="true" />
+                                &nbsp;
+                                <p:commandButton value="Log in" update="@form"
+                                                 action="#{loginBackingBean.doLogin}"
+                                                 ajax="false"/>
+                            </sec:authorize>
+
+                            <sec:authorize access="isAuthenticated()">
+                                <p:commandButton id="logout" value="Log out" update="@form"
+                                                 action="#{loginBackingBean.doLogout}"
+                                                 ajax="false" />
+                            </sec:authorize>
+                        </div>
+                        <div class="cBoth" ></div>
+                    </div>
+                    </div>
+                </h:form>
+            </div>
+
+            <div>
+                <ui:insert name="content"/>
+            </div>
+        </div>
+    </h:body>
+</f:view>
+</html>

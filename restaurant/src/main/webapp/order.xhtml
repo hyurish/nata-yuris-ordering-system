@@ -1,0 +1,175 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/menuTmpl.xhtml">
+
+    <ui:define name="title">Yuris and Nata Menu</ui:define>
+
+    <ui:define name="content">
+
+        <h:form id="orderForm" prependId="false">
+            <p:focus/>
+
+            <p:poll interval="30" listener="#{orderBackingBean.onOrderChangeCheck}" />
+
+            <div id="main-bg" ></div>
+
+            <div id="container">
+
+                <div class="content">
+                    <div class="capture">
+                        <h:outputText id="headerId" styleClass="updatable-table" value="#{orderBackingBean.header}"/>
+                    </div>
+                    <div class="main-menu">
+                        <h:panelGrid id="customerInfoGrid" columns="2" style="margin: 0 auto;">
+                            <p:outputPanel>
+                                <div class="inputContainer nameInputContainer">
+                                    <h:panelGroup >
+                                        <h:outputText value="Name: "/>
+                                        <h:outputText value="*&nbsp;" />
+                                        <p:inputText id="customerNameId"
+                                                     value="#{orderBackingBean.customerName}"
+                                                     required="true" requiredMessage="Please fill in this field."
+                                                     maxlength="30"
+                                                     styleClass="input"
+                                                     disabled="#{orderBackingBean.cartBean.order.guestName != null}"/>
+                                    </h:panelGroup>
+
+                                </div>
+                            </p:outputPanel>
+                            <p:outputPanel>
+                                <div class="inputContainer tableInputContainer">
+                                    <h:panelGroup >
+                                        <div class="tableLable">
+                                            <h:outputText value="Table:  "/>
+                                            <h:outputText value="*&nbsp;" />
+                                        </div>
+                                        <p:selectOneMenu id="tableInputId"
+                                                value="#{orderBackingBean.restaurantTable}"
+                                                converter="#{restaurantTableConverter}"
+                                                disabled="#{orderBackingBean.cartBean.order.restaurantTable != null}"
+                                                styleClass="tableInput input" >
+                                            <f:selectItems value="#{orderBackingBean.restaurantTables}"
+                                                           var="table"
+                                                           itemLabel="#{table.tableNumber}"
+                                                           itemValue="#{table}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </div>
+                            </p:outputPanel>
+                            <p:message for="customerNameId" />
+                        </h:panelGrid>
+                    </div>
+                    <div style="clear: both;" />
+
+                    <p:outputPanel id="orderDetailsId" style="display:block" styleClass="orderDetails updatable-table">
+                        <p:dataTable id="orderTable" value="#{orderBackingBean.cartBean.order.orderDetails}"
+                                     var="orderDetail"
+                                     rowStyleClass="#{orderDetail.id == null ? null : 'confirmed'}"
+                                     rendered="#{not empty orderBackingBean.cartBean.order.orderDetails}">
+
+                            <p:column style="width: 60px">
+                                <p:outputPanel style="display:block" styleClass="item-del"
+                                               rendered="#{orderDetail.id == null}">
+                                    <p:commandLink value="" styleClass=""
+                                                   action="#{orderBackingBean.removeItem(orderDetail)}"
+                                                   process="@this"
+                                                   update="@(.updatable-table)" />
+                                </p:outputPanel>
+                            </p:column>
+
+                            <p:column style="width: 140px">
+                                <div class="itemImg" >
+                                    <h:graphicImage library="images/gallery" name="#{orderDetail.menuItem.picture}" />
+                                </div>
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">Item</f:facet>
+                                <div class="orderItemTitle">
+                                    <h:outputText id="menuItemTitle" styleClass="" value="#{orderDetail.menuItem.title} " title=""/>
+                                </div>
+                            </p:column>
+
+                            <p:column style="width: 90px">
+                                <f:facet name="header">Weight</f:facet>
+                                <div class="orderItemWeight" >
+                                    <h:outputText id="menuItemWeight" styleClass=""
+                                                  value="#{orderDetail.menuItem.measure}" title=""/>
+                                </div>
+                            </p:column>
+
+                            <p:column style="width: 90px">
+                                <f:facet name="header">Price</f:facet>
+                                <div class="orderItemPrice" >
+                                    <h:outputText id="menuItemPrice"
+                                                  value="#{orderDetail.prettyPrice}  &nbsp;&#8372;" title=""/>
+                                </div>
+                                <f:facet name="footer"></f:facet>
+                            </p:column>
+
+                            <p:column style="width: 100px">
+                                <f:facet name="header">Qty</f:facet>
+                                <p:outputPanel style="display:block" styleClass="orderItemQuantity"
+                                               rendered="#{orderDetail.id != null}">
+                                    <h:outputText id="menuItemQuantity" styleClass="" value="#{orderDetail.itemQuantity}" title=""/>
+                                </p:outputPanel>
+                                <p:outputPanel id="orderItemQuantityId" style="display:block" styleClass="orderItemQuantity updatable"
+                                               rendered="#{orderDetail.id == null}">
+                                    <div class="quantity-select">
+                                        <div id="amountId" class="amount">
+                                            #{orderDetail.itemQuantity}
+                                        </div>
+                                        <div class="btns-wrap" >
+                                            <p:commandLink value="-" styleClass="minus-btn"
+                                                           action="#{orderBackingBean.takeItem(orderDetail)}"
+                                                           process="@this"
+                                                           update="@(.updatable)"
+                                                           disabled="#{!orderBackingBean.isTakeBtnEnabled(orderDetail)}" />
+                                            <p:commandLink value="+" styleClass="plus-btn"
+                                                           action="#{orderBackingBean.addItem(orderDetail)}"
+                                                           process="@this"
+                                                           update="@(.updatable)"/>
+                                        </div>
+                                        <div style="clear: both"/>
+                                    </div>
+                                </p:outputPanel>
+                                <f:facet name="footer">Total: </f:facet>
+                            </p:column>
+
+                            <p:column style="width: 90px">
+                                <f:facet name="header">Total</f:facet>
+                                <p:outputPanel id="orderItemTotalId" style="display:block" styleClass="orderItemTotal updatable" >
+                                    <h:outputText value="#{orderDetail.itemQuantity * orderDetail.prettyPrice}  &nbsp;&#8372;"/>
+                                </p:outputPanel>
+                                <f:facet name="footer">
+                                    <h:outputText id="menuItemTotalId" styleClass="updatable" value="#{cartBean.total} &nbsp;&#8372;"/>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <div id="order-btns">
+                            <h:link value="Continue Ordering" styleClass="btn continue-order-btn"
+                                    outcome="menu" />
+                            <p:commandLink value="Confirm Order" styleClass="btn save-order-btn"
+                                           action="#{orderBackingBean.saveOrder}"
+                                           update="@form" disabled="#{!orderBackingBean.saveBtnEnabled}"
+                                           rendered="#{orderBackingBean.orderEditable}"/>
+                            <p:commandLink value="Close Order" styleClass="btn save-order-btn"
+                                           action="#{orderBackingBean.closeOrder}"
+                                           rendered="#{!orderBackingBean.orderEditable}"/>
+                        </div>
+
+                    </p:outputPanel>
+                </div>
+            </div>
+
+        </h:form>
+
+    </ui:define>
+</ui:composition>

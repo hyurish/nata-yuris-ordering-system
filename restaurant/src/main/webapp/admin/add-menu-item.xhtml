@@ -1,0 +1,161 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+    <ui:define name="title">New Menu Item</ui:define>
+
+    <ui:define name="center">
+        <p:layoutUnit position="center" style="border: none">
+
+            <f:metadata>
+                <f:viewParam name="categoryId"
+                             value="#{addMenuItemBackingBean.selectedMenuCategory}"
+                             converter="#{menuCategoryConverter}"
+                             converterMessage="Unknown menuCategory,
+                             please use a link from within the site." />
+            </f:metadata>
+            <f:event type="preRenderView" listener="#{addMenuItemBackingBean.onPreRenderView}" />
+
+
+            <h:form id="addMenuItemForm" prependId="false">
+
+                <p:focus/>
+
+                <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+                <div class="orderInfoContainer m10Center" >
+
+                    <p:panelGrid styleClass="addContainer">
+
+                        <p:row>
+
+                            <p:column colspan="2">
+
+                                <div class="aRight">
+                                    <h:outputText value="Category * : " />
+                                    <p:selectOneMenu id="itemCategory"
+                                                     value="#{addMenuItemBackingBean.menuCategory}"
+                                                     converter="#{menuCategoryConverter}"
+                                                     styleClass="aLeft">
+                                        <f:selectItems value="#{addMenuItemBackingBean.menuCategories}"
+                                                       var="category"
+                                                       itemLabel="#{category.title}"
+                                                       itemValue="#{category}" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </p:column>
+
+                        </p:row>
+
+                        <p:row>
+
+                            <p:column>
+                                <div>
+                                    <h:outputText value="Item title * :" />
+                                </div>
+                                <div>
+                                    <p:inputText id="itemTitle"
+                                                 value="#{addMenuItemBackingBean.title}"
+                                                 required="true"  maxlength="250"/>
+                                </div>
+                            </p:column>
+
+                            <p:column>
+                                <div>
+                                    <h:outputText value="Item produced * :" />
+                                </div>
+                                <div>
+
+                                    <p:selectOneMenu id="itemStatus"
+                                                     value="#{addMenuItemBackingBean.cookingPlace}">
+                                        <f:selectItems
+                                                value="#{addMenuItemBackingBean.cookingPlaces}"
+                                                       var="cookingPlace"
+                                                       itemLabel="#{cookingPlace.label}"
+                                                       itemValue="#{cookingPlace}" />
+                                    </p:selectOneMenu>
+
+                                </div>
+                            </p:column>
+
+                        </p:row>
+
+                        <p:row>
+
+                            <p:column>
+                                <div>
+                                    <h:outputText value="Item measure :" />
+                                </div>
+                                <div>
+                                    <p:inputText id="itemWeight"
+                                                 value="#{addMenuItemBackingBean.measure}"
+                                                 maxlength="50"/>
+                                </div>
+                            </p:column>
+
+                            <p:column>
+                                <div>
+                                    <h:outputText value="Item price * :" />
+                                </div>
+                                <div>
+                                    <p:inputText id="itemPrice"
+                                                 value="#{addMenuItemBackingBean.price}"
+                                                 required="true" >
+                                        <f:convertNumber minFractionDigits="2" />
+                                        <f:validateDoubleRange minimum="10.00" maximum="3000.00" />
+                                    </p:inputText>
+                                </div>
+                            </p:column>
+
+                        </p:row>
+
+                        <p:row>
+
+                            <p:column colspan="2">
+                                <div>
+                                    <h:outputText value="Item Description :" />
+                                </div>
+                                <div>
+                                    <p:inputTextarea id="itemDescription"
+                                                     value="#{addMenuItemBackingBean.description}"
+                                                     rows="5" cols="60" />
+                                </div>
+                            </p:column>
+
+                        </p:row>
+
+                    </p:panelGrid>
+
+                </div>
+
+                <div class="buttonsContainer m20Center ">
+                    <p:commandButton
+                            styleClass="left"
+                            value="Cancel"
+                            immediate="true"
+                            action="#{addMenuItemBackingBean.onCancel}"
+                            update=":addMenuItemForm:messages"
+                            >
+                    </p:commandButton>
+                    <p:commandButton
+                            styleClass="right"
+                            value="Save"
+                            action="#{addMenuItemBackingBean.onSave}"
+                            update="@form :addMenuItemForm:messages"
+                            >
+                    </p:commandButton>
+                    <div class="cBoth" />
+                </div>
+
+
+            </h:form>
+
+        </p:layoutUnit>
+    </ui:define>
+
+</ui:composition>

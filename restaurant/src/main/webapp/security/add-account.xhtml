@@ -1,0 +1,94 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+    <ui:define name="title">New Account</ui:define>
+
+    <ui:define name="center">
+        <p:layoutUnit position="center" style="border: none">
+            <h:form id="accountForm" prependId="false">
+
+                <p:focus/>
+
+                <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+                <div class="orderInfoContainer m10Center" >
+
+                    <div class="left" >
+
+                        <p:panelGrid id="accountInfo" columns="2" >
+                            <h:outputText styleClass="orderLabel" value="First Name: "/>
+                            <p:inputText value="#{addAccountBackingBean.account.firstName}"
+                                         maxlength="100"
+                                    />
+
+                            <h:outputText styleClass="orderLabel" value="Last Name: "/>
+                            <p:inputText value="#{addAccountBackingBean.account.lastName}"
+                                         maxlength="100"
+                                    />
+
+                            <h:outputText styleClass="orderLabel" value="Username: "/>
+                            <p:inputText value="#{addAccountBackingBean.account.username}"
+                                         required="true" validator="#{addAccountBackingBean.usernameAvailabilityCheck}"
+                                         maxlength="100" label="Username"
+                                    >
+                                <p:ajax event="keyup" update="messages" listener="#{addAccountBackingBean.checkAvailableUsername}"/>
+                            </p:inputText>
+
+                            <h:outputText styleClass="orderLabel" value="Password: "/>
+                            <p:inputText value="#{addAccountBackingBean.account.password}"
+                                         required="true" requiredMessage="Empty passwords is not allowed"
+                                         maxlength="64"
+                                    />
+                        </p:panelGrid>
+
+                    </div>
+
+                    <div class="right p5p10" >
+                        <h:outputText styleClass="orderLabel" value="Roles: "/>
+                        <p:selectManyMenu
+                                value="#{addAccountBackingBean.account.roles}"
+                                converter="#{roleConverter}"
+                                >
+                            <f:selectItems
+                                    value="#{addAccountBackingBean.roles}"  var="role"
+                                    itemLabel="#{role.name}"  itemValue="#{role}" />
+                        </p:selectManyMenu>
+
+                    </div>
+
+                    <div class="cBoth"/>
+                </div>
+
+                <div class="buttonsContainer m20Center ">
+                    <p:commandButton
+                            styleClass="left"
+                            value="Cancel"
+                            immediate="true"
+                            action="#{addAccountBackingBean.onCancel}"
+                            update="@form :accountForm:messages"
+                            >
+                    </p:commandButton>
+                    <p:commandButton
+                            styleClass="right"
+                            value="Save"
+                            action="#{addAccountBackingBean.onSave}"
+                            update="@form :accountForm:messages"
+                            >
+                    </p:commandButton>
+                    <div class="cBoth" />
+                </div>
+
+
+            </h:form>
+
+        </p:layoutUnit>
+    </ui:define>
+
+</ui:composition>

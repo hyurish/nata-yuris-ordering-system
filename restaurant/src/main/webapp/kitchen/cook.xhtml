@@ -1,0 +1,109 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+    <ui:define name="title">Cook</ui:define>
+
+    <ui:define name="west">
+        <p:layoutUnit position="west" size="200"
+                      resizable="false" closable="false" collapsible="true"
+                      styleClass="admin"
+                >
+
+        </p:layoutUnit>
+    </ui:define>
+
+
+    <ui:define name="east">
+        <p:layoutUnit position="east" size="100"
+                      resizable="false" closable="false" collapsible="true"
+                      styleClass="admin"
+                >
+
+        </p:layoutUnit>
+    </ui:define>
+
+    <ui:define name="center">
+        <p:layoutUnit position="center">
+            <h:form id="orderDetailsForm">
+
+                <p:growl id="messages" showDetail="true" showSummary="false"/>
+
+                <p:poll interval="30" listener="#{cookBackingBean.onNewOrdersCheck}" />
+
+                <div class="editContentContainer" >
+
+
+                    <p:dataTable id="orderInfosTable"
+                                 value="#{cookBackingBean.notCookedOrderDetails}"
+                                 var="orderDetail" rowKey="#{orderDetail.id}"
+                                 rendered="#{not empty cookBackingBean.notCookedOrderDetails}"
+                                 rowStyleClass="#{cookBackingBean.getOrderDetailRowStyleClass(orderDetail)}">
+
+                        <p:column style="width: 90px">
+                            <div class="itemImgSmall" >
+                                <h:graphicImage library="images/gallery" name="#{orderDetail.menuItem.picture}" width="70"/>
+                            </div>
+                        </p:column>
+
+                        <p:column style="width: 340px">
+                            <f:facet name="header">Dish</f:facet>
+                            <div class="orderItemTitle">
+                                <h:outputText value="#{orderDetail.menuItem.title} " />
+                            </div>
+                        </p:column>
+
+                        <p:column style="width: 50px">
+                            <f:facet name="header">Quantity</f:facet>
+                            <div class="orderItemQuantity" >
+                                <h:outputText value="#{orderDetail.itemQuantity}"/>
+                            </div>
+                        </p:column>
+
+                        <p:column style="width: 50px">
+                            <f:facet name="header">Order</f:facet>
+                            <div class="orderItemQuantity" >
+                                <h:outputText value="#{orderDetail.order.number}"/>
+                            </div>
+                        </p:column>
+
+                        <p:column style="width: 50px">
+                            <f:facet name="header">Time</f:facet>
+                            <div class="orderItemQuantity" >
+                                <h:outputText value="#{orderDetail.order.orderTimeInDateFormat}" >
+                                    <f:convertDateTime dateStyle="full" pattern="HH:mm"/>
+                                </h:outputText>
+                            </div>
+                        </p:column>
+
+                        <p:column style="width: 100px">
+                            <f:facet name="header">Waiter</f:facet>
+                            <div class="" >
+                                <h:outputText value="#{orderDetail.order.waiter.fullName}" />
+                            </div>
+                        </p:column>
+
+                        <p:column style="width: 30px">
+                            <f:facet name="header">Done</f:facet>
+                            <div class="orderItemQuantity" >
+                                <p:selectBooleanCheckbox value="#{orderDetail.cooked}" >
+                                    <p:ajax listener="#{cookBackingBean.serviceCookedValueChange(orderDetail)}"
+                                            update=":orderDetailsForm:messages" />
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </p:column>
+
+                    </p:dataTable>
+                </div>
+
+            </h:form>
+        </p:layoutUnit>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+        xmlns:beans="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="
+                        http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/security
+                        http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <http auto-config="true" use-expressions="true" access-denied-page="/access-denied.xhtml">
+        <form-login login-page="/login-required.xhtml"
+                    authentication-failure-url="/login-failed.xhtml"
+                    authentication-success-handler-ref="mySimpleUrlAuthenticationSuccessHandler"
+                />
+        <remember-me />
+        <logout success-handler-ref="mySimpleUrlLogoutSuccessHandler" />
+
+        <intercept-url pattern="/kitchen/**" access="hasAnyRole('ROLE_COOK', 'ROLE_ADMIN')"/>
+        <intercept-url pattern="/cashier-desk/**" access="hasAnyRole('ROLE_WAITER', 'ROLE_ADMIN')"/>
+        <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
+        <intercept-url pattern="/security/**" access="hasAnyRole('ROLE_SECURITY_OFFICER')"/>
+        <intercept-url pattern="/**" access="permitAll"/>
+    </http>
+
+    <authentication-manager alias="authenticationManager">
+        <authentication-provider user-service-ref="accountService">
+        </authentication-provider>
+    </authentication-manager>
+
+    <beans:bean id="mySimpleUrlAuthenticationSuccessHandler"
+                class="ua.yuris.restaurant.security.MySimpleUrlAuthenticationSuccessHandler" />
+
+    <beans:bean id="mySimpleUrlLogoutSuccessHandler"
+                class="ua.yuris.restaurant.security.MySimpleUrlLogoutSuccessHandler" />
+
+</beans:beans>

@@ -1,0 +1,512 @@
+*, html, body, div, dl, dt, dd,
+ul, ol, li, h1, h2, h3, h4, h5, h6,
+pre, form, label, fieldset, input, p, blockquote, th, td {
+    margin: 0;
+    padding: 0;
+}
+
+body, div, ul, section, nav, header {
+    border: 0;
+}
+
+.aCenter {
+    text-align: center;
+}
+.aLeft {
+    text-align: left;
+}
+.aRight {
+    text-align: right;
+}
+.left {
+    float: left;
+}
+.right {
+    float: right;
+}
+.cBoth {
+    clear: both;
+}
+
+.width80 {
+    width: 80%;
+}
+.mCenter {
+    margin: 0 auto;
+}
+.m10Center {
+    margin: 10px auto;
+}
+.m20Center {
+    margin: 20px auto;
+}
+.margin20 {
+    margin: 20px;
+}
+.marginT20 {
+    margin: 20px 0;
+}
+.m5Side {
+    margin: 0 5px;
+}
+.p0 {
+    padding: 0 !important;
+}
+.p10 {
+    padding: 10px;
+}
+.p5p10 {
+    padding: 0 10px 5px 10px;
+}
+.p1020 {
+    padding: 10px 20px;
+}
+
+.container {
+    width: 800px;
+    min-height: 450px;
+    margin: 50px auto;
+    padding: 20px 0;
+    box-shadow: 2px 2px 10px #888;
+    background: url("#{resource['css:images/noise3.png']}");
+    padding-bottom: 70px;
+    font-family: Verdana;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    border-radius: 7px 7px 7px 7px;
+}
+.admin {
+    font-family: Verdana;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+}
+.adminContainer {
+    margin: 0 auto;
+    min-width: 1200px;
+    min-height: 450px;
+    font-family: Verdana;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+}
+.contentContainer {
+    width: 700px;
+    margin: 0 auto;
+}
+.editContentContainer {
+    width: 960px;
+    margin: 0 auto;
+}
+.whiteContainer {
+    padding: 10px;
+    background: #ffffff;
+}
+.buttonsContainer {
+    padding: 10px;
+    width: 300px;
+}
+.addContainer {
+    width: 400px;
+    margin: 0 auto;
+}
+.itemImg {
+    width: 214px;
+    padding: 10px 20px;
+}
+.itemImgSmall {
+    width: 70px;
+    padding: 5px 10px;
+}
+
+.cartButtonContainerClass {
+    padding: 10px 20px;
+    text-align: right;
+}
+#menuForm .ui-datatable th,
+#menuForm .ui-datatable .ui-datatable-data td,
+#menuForm .ui-datatable .ui-datatable-data-empty td,
+#menuForm .ui-datatable tfoot td {
+    padding: 0 !important;
+}
+#menuForm .ui-datatable table thead {
+    display: none !important;
+}
+
+#menuForm .ui-widget-content,
+#menuForm .ui-datatable .ui-datatable-data td,
+#menuForm .ui-datatable .ui-datatable-data-empty td{
+    border: none !important;
+    border-bottom: 1px solid #a8a8a8 !important;
+}
+#menuForm .ui-datatable-odd {
+    background: #ffffff !important;
+}
+
+.menuItemTitle {
+    text-align: center;
+    font-family: Verdana;
+    font-size: 2.0em;
+}
+.menuItemDescription {
+    padding: 10px 20px;
+    font-family: Verdana;
+    font-style: italic;
+}
+.menuItemWeight {
+    text-align: right;
+    padding: 10px 20px;
+    font-family: Verdana;
+}
+.menuItemPrice {
+    font-weight: 800;
+}
+
+.orderHeader {
+    padding: 20px;
+    font: 1.8em Verdana;
+}
+
+#orderForm .ui-datatable th,
+#orderForm .ui-datatable tbody td,
+#orderForm .ui-datatable tfoot td {
+    padding: 0 !important;
+}
+#orderForm .ui-datatable th {
+    padding: 20px 0 !important;
+}
+#orderForm .ui-datatable tfoot td {
+    padding: 20px 0 !important;
+}
+
+#orderForm table thead .ui-state-default,
+#orderForm table tfoot .ui-state-default{
+    background: #ffffff !important;
+    border: none !important;
+    border-bottom: 1px solid #a8a8a8 !important;
+}
+#orderForm .ui-widget-content,
+#orderForm .ui-datatable .ui-datatable-data td,
+#orderForm .ui-datatable .ui-datatable-data-empty td{
+    border: none !important;
+    border-bottom: 1px solid #a8a8a8 !important;
+}
+#orderForm .ui-datatable-odd {
+    background: #ffffff;
+}
+
+.orderItemTitle {
+    padding: 10px 0;
+    text-align: center;
+    font-family: Verdana;
+    font-size: 1.4em;
+}
+.orderItemWeight {
+    width: 55px;
+    text-align: right;
+    padding: 10px;
+    font-family: Verdana;
+}
+.orderItemQuantity {
+    width: 40px;
+    padding: 5px 10px;
+    text-align: center;
+}
+.orderItemPrice {
+    width: 70px;
+    font-weight: 800;
+    padding: 10px;
+    text-align: right;
+}
+.deleteItemButton {
+    text-align: center;
+    height: 2.0em;
+}
+.changeQuantityButtons {
+    padding: 0 0 5px;
+}
+.minusItemButton {
+    width: 2.0em !important;
+    height: 2.0em;
+}
+.plusItemButton {
+    width: 2.0em !important;
+    height: 2.0em;
+}
+.clientAndOrderInfo {
+    margin: 20px 0;
+}
+
+.nameInputContainer {
+    width: 250px;
+    padding: 10px;
+    margin: 0 auto;
+}
+.tableInputContainer {
+    width: 220px;
+    padding: 10px;
+    margin: 0 auto;
+}
+.commentsInputContainer {
+    width: 510px;
+    padding: 10px;
+    margin: 0 auto;
+}
+
+.ui-menu-my {
+    width: 7.0em !important;
+}
+
+.disabled {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    background-image: none !important;
+}
+.confirmed {
+    background-color: rgba(240, 240, 240, 0.3) !important;
+    background-image: none !important;
+}
+.red-bg {
+    background-color: rgba(202, 91, 113, 0.10) !important;
+    background-image: none !important;
+}
+.green-bg {
+    background-color: rgba(130, 202, 115, 0.32) !important;
+    background-image: none !important;
+}
+.blue-bg {
+    background-color: rgba(154, 183, 233, 0.40) !important;
+    background-image: none !important;
+}
+
+
+
+#addMenuItemForm .ui-widget-content,
+#addMenuItemForm .ui-panelgrid td {
+    border: none !important;
+}
+
+.imageItem {
+    padding-top: 20px !important;
+    width: 200px;
+    height: 150px;
+    text-align: center;
+}
+
+
+#customerInfoGrid .ui-selectonemenu {
+    width: 60px !important;
+    display: inline-flex;
+}
+#customerInfoGrid .ui-selectonemenu .ui-selectonemenu-label {
+    width: 55px !important;
+}
+
+#waiterOrdersForm .ui-datatable th,
+#waiterOrdersForm .ui-datatable tfoot {
+    display: none;
+}
+
+#waiterOrdersForm .ui-datatable th,
+#waiterOrdersForm .ui-datatable tbody td,
+#waiterOrdersForm .ui-datatable tfoot td {
+    padding: 5px 10px;
+}
+
+#waiterOrdersTable .ui-widget-content,
+#waiterOrdersTable .ui-datatable-data td,
+#waiterOrdersTable .ui-datatable-data-empty td{
+    border: none;
+}
+
+#waiterOrdersTable .ui-widget-content,
+#waiterOrdersTable .ui-datatable-odd {
+    background: none;
+}
+.nobodyOrderContainer {
+    padding: 10px 10px;
+}
+.order {
+    padding: 10px;
+    width: 250px;
+    height: 70px;
+    font-family: Arial,Tahoma,Verdana,sans-serif;
+    border: 1px solid #a8a8a8;
+    moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+}
+.orderEnabled {
+    background: #c4c4c4 linear-gradient(top, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
+    background: #c4c4c4 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.80)), to(rgba(255, 255, 255, 0.50)));
+    background: #c4c4c4 -moz-linear-gradient(top, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
+}
+.orderDisabled {
+    background: #c8c8c8;
+}
+#waiterOrdersTable .ui-state-highlight {
+    color: #4f4f4f;
+    text-shadow: none;
+    background: none;
+}
+#waiterOrdersTable .ui-state-highlight .orderStandard {
+    background: rgba(91, 155, 33, 0.2);
+}
+
+.orderLabel {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #b9b9b9;
+}
+.orderNmberLabel {
+    font-size: 1.2em;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+.orderTimeLabel {
+    padding: 2px 0 0 0;
+    letter-spacing: 0.5px;
+    font-weight: 800;
+}
+
+.orderClientLabel,
+.orderWaiterLabel {
+    padding: 3px 0 0 0;
+    font-style: italic;
+}
+.orderTotalLabel {
+    padding: 3px 0 0 0;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.statusIcon {
+    width: 10px;
+    height: 10px;
+    moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+
+.greenIcon {
+    background: #5db02d;
+    border: 1px solid #539244;
+}
+.redIcon {
+    background: #f93841;
+    border: 1px solid #c1484d;
+}
+.greyIcon {
+    background: #bdbdbd;
+    border: 1px solid #767676;
+}
+
+.orderInfoContainer {
+    width: 558px;
+    padding: 20px;
+    background: #c4c4c4 linear-gradient(top, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
+    background: #c4c4c4 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.80)), to(rgba(255, 255, 255, 0.50)));
+    background: #c4c4c4 -moz-linear-gradient(top, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
+    border: 1px solid #a8a8a8;
+    moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+.orderItemsContainer {
+    width: 600px;
+}
+#orderTable .ui-selectonemenu {
+    width: 60px !important;
+    display: inline-flex;
+}
+#orderTable .ui-selectonemenu .ui-selectonemenu-label {
+    width: 55px !important;
+}
+
+#orderStatus .ui-selectonemenu,
+#orderStatusFull .ui-selectonemenu {
+    width: 100px !important;
+    display: inline-flex;
+}
+#orderStatus .ui-selectonemenu .ui-selectonemenu-label,
+#orderStatusFull .ui-selectonemenu .ui-selectonemenu-label {
+    width: 95px !important;
+}
+
+#waiterButtons .ui-selectonemenu {
+    width: 80px !important;
+    display: inline-flex;
+    text-align: left;
+}
+
+#waiterButtons .ui-selectonemenu .ui-selectonemenu-label {
+    width: 75px !important;
+}
+#orderWaiter .ui-selectonemenu {
+    width: 120px !important;
+    display: inline-flex;
+}
+
+#orderWaiter .ui-selectonemenu .ui-selectonemenu-label {
+    width: 115px !important;
+}
+
+.imgContainer {
+    width: 140px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.imgLabel {
+    width: 140px;
+    padding: 10px;
+    position: absolute;
+    bottom: 0;
+    color: #fbfbfb;
+    background-color: #000;
+    opacity: 0.8;
+    text-align: center;
+    font-size: 1.2em;
+    font-style: italic;
+    font-family: Arial;
+    letter-spacing: 0.1em;
+}
+
+#accountsForm .ui-selectmanymenu {
+    width: 160px !important;
+}
+
+#accountInfo .ui-widget-content,
+#accountInfo td {
+    border: none;
+    background: none;
+}
+
+#accountForm .ui-selectmanymenu {
+    width: 200px;
+}
+
+.left-menu-btns {
+    padding: 5px 3px 0 5px;
+}
+#addMenuItemForm table,
+#addMenuItemForm table tr {
+    background: transparent;
+}
+
+.item-del {
+    margin: 0 5px;
+    height: 40px;
+    width: 40px;
+}
+.item-del a {
+    height: 40px;
+    width: 40px;
+    display: inline-block;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-image: url("#{resource['css:images/x-mark-5-32.png']}");
+}
+.item-del a:hover {
+    background-image: url("#{resource['css:images/close-window-32.png']}");
+}

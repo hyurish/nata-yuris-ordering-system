@@ -1,0 +1,24 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:sec="http://www.springframework.org/security/tags"
+                template="/WEB-INF/templates/adminTmpl.xhtml">
+
+    <ui:define name="title">Administration part</ui:define>
+
+
+    <ui:define name="east">
+        <p:layoutUnit position="center"
+                      styleClass="admin"
+                >
+            <div style="margin: 50px auto; text-align: center; " >
+                <h1>Please, log in to access the administration page</h1>
+            </div>
+        </p:layoutUnit>
+    </ui:define>
+
+</ui:composition>
