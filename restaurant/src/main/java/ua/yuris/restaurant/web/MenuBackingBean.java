@@ -16,6 +16,7 @@ import ua.yuris.restaurant.exception.RestaurantException;
 import ua.yuris.restaurant.model.MenuCategory;
 import ua.yuris.restaurant.model.MenuItem;
 import ua.yuris.restaurant.service.MenuStateService;
+import ua.yuris.restaurant.web.cartstate.CartState;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,9 +27,9 @@ import ua.yuris.restaurant.service.MenuStateService;
  */
 @ManagedBean
 @ViewScoped
-public class MenuBackingBean
-        implements Serializable {
+public class MenuBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(MenuBackingBean.class);
+    private static final int INITIAL_MENU_CATEGORY_NUMBER = 0;
 
     @ManagedProperty(value = "#{menuStateService}")
     private MenuStateService menuStateService;
@@ -36,10 +37,10 @@ public class MenuBackingBean
     @ManagedProperty(value = "#{cartBean}")
     private CartBean cartBean;
 
-    private List<MenuItem> menuItems;
-    private List<MenuCategory> menuCategories;
     private String currentMenuCategoryId;
     private MenuCategory currentMenuCategory;
+    private List<MenuCategory> menuCategories;
+    private List<MenuItem> menuItems;
     private boolean tint;
 
     public MenuBackingBean() {
@@ -49,53 +50,32 @@ public class MenuBackingBean
     public void initialize() {
         menuCategories = menuStateService.findAllActiveCategories();
         if (!menuCategories.isEmpty()) {
-            setCurrentMenuCategory(menuCategories.get(0));
+            setCurrentMenuCategory(menuCategories.get(INITIAL_MENU_CATEGORY_NUMBER));
+            menuItems = menuStateService.findAllActiveMenuItemByCategory(currentMenuCategory);
         } else {
             menuItems = new ArrayList<>();
         }
 
     }
 
-    public boolean isCartAndOrderEmpty() {
-        return cartBean.isCartEmpty();
+    public boolean isCartEmpty() {
+        CartState cartState = cartBean.getCartState();
+        return cartState.isEmpty();
     }
 
     public String getSummary() {
-        int numberInCart = cartBean.countNewItems();
-        if (numberInCart > 0) {
-            return numberInCart == 1 ? "" + numberInCart + " Item in Cart" : "" + numberInCart +
-                    " Items in Cart";
-        }
-        int numberInOrder = cartBean.countConfirmedItems();
-        if (numberInOrder > 0) {
-            return numberInOrder == 1 ? "" + numberInOrder + " Item Ordered" : "" + numberInOrder +
-                    " Items Ordered";
-        }
-        return "Cart is Empty";
+        CartState cartState = cartBean.getCartState();
+        return cartState.getSummary();
     }
 
-    public String getCheckout() {
-        int numberInCart = cartBean.countNewItems();
-        if (numberInCart > 0) {
-            return "Cart";
-        }
-        int numberInOrder = cartBean.countConfirmedItems();
-        if (numberInOrder > 0) {
-            return "Your Order";
-        }
-        return "Cart";
+    public String getCheckoutLabel() {
+        CartState cartState = cartBean.getCartState();
+        return cartState.getLabel();
     }
 
     public String getTotal() {
-        double totalInCart = cartBean.getTotalOfNewItems();
-        if (totalInCart > 0.01) {
-            return "" + totalInCart + " ₴";
-        }
-        double totalInOrder = cartBean.getTotalOfConfirmedItems();
-        if (totalInOrder > 0.01) {
-            return "" + totalInOrder + " ₴";
-        }
-        return "0 ₴";
+        CartState cartState = cartBean.getCartState();
+        return "" + cartState.getTotal() + " ₴";
     }
 
     public boolean getChangeBgTint() {
@@ -153,11 +133,16 @@ public class MenuBackingBean
 
     public void setCurrentMenuCategoryId(String currentMenuCategoryId) {
         this.currentMenuCategoryId = currentMenuCategoryId;
+        parseCategoryId();
+    }
+
+    private void parseCategoryId() {
         if (currentMenuCategoryId != null) {
             try {
                 Long categoryId = Long.parseLong(currentMenuCategoryId);
                 MenuCategory menuCategory = menuStateService.findCategory(categoryId);
                 setCurrentMenuCategory(menuCategory);
+                menuItems = menuStateService.findAllActiveMenuItemByCategory(currentMenuCategory);
             } catch (NumberFormatException e) {
                 LOG.info("Invalid request parameter categoryId");
             }
@@ -166,7 +151,6 @@ public class MenuBackingBean
 
     public void setCurrentMenuCategory(MenuCategory currentMenuCategory) {
         this.currentMenuCategory = currentMenuCategory;
-        menuItems = menuStateService.findAllActiveMenuItemByCategory(currentMenuCategory);
     }
 
     public List<MenuItem> getMenuItems() {

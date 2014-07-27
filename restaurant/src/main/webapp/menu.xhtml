@@ -20,11 +20,11 @@
 
             <p:outputPanel id="cartOuterId" styleClass="updatable cartOuter" >
                 <p:outputPanel style="display:block" id="cart"
-                               rendered="#{!menuBackingBean.cartAndOrderEmpty}"
+                               rendered="#{!menuBackingBean.cartEmpty}"
                                 >
                     <span class="summary">#{menuBackingBean.summary}</span>
 
-                    <h:link value="#{menuBackingBean.checkout}" outcome="order" styleClass="checkout" />
+                    <h:link value="#{menuBackingBean.checkoutLabel}" outcome="order" styleClass="checkout" />
 
                     <span>#{menuBackingBean.total}</span>
                 </p:outputPanel>

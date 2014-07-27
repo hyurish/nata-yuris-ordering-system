@@ -22,6 +22,8 @@ import ua.yuris.restaurant.model.OrderDetail;
 import ua.yuris.restaurant.model.RestaurantTable;
 import ua.yuris.restaurant.model.enums.OrderStatusType;
 import ua.yuris.restaurant.service.OrderService;
+import ua.yuris.restaurant.web.cartstate.CartState;
+import ua.yuris.restaurant.web.cartstate.CartStateFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,53 +46,11 @@ public class CartBean
 
     private Order order;
 
+    private CartState cartState;
+    private boolean isCartStateChanged = true;
+
     public CartBean() {
-        order = new Order();
-        order.setStatus(OrderStatusType.SUBMITTED);
-    }
-
-    public boolean isCartEmpty() {
-        return order.getOrderDetails().isEmpty();
-    }
-
-    public int countNewItems() {
-        int nItems = 0;
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            if (orderDetail.isNewEntity()) {
-                nItems += orderDetail.getItemQuantity();
-            }
-        }
-        return nItems;
-    }
-
-    public int countConfirmedItems() {
-        int nItems = 0;
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            if (!orderDetail.isNewEntity()) {
-                nItems += orderDetail.getItemQuantity();
-            }
-        }
-        return nItems;
-    }
-
-    public double getTotalOfNewItems() {
-        int total = 0;
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            if (orderDetail.isNewEntity()) {
-                total += orderDetail.getItemQuantity() * orderDetail.getItemPrice();
-            }
-        }
-        return total / 100.0;
-    }
-
-    public double getTotalOfConfirmedItems() {
-        int total = 0;
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            if (!orderDetail.isNewEntity()) {
-                total += orderDetail.getItemQuantity() * orderDetail.getItemPrice();
-            }
-        }
-        return total / 100.0;
+        order = new Order(OrderStatusType.SUBMITTED);
     }
 
     public double getTotal() {
@@ -102,10 +62,7 @@ public class CartBean
     }
 
     public boolean isNewItemInCart(MenuItem menuItem) {
-        if (findNewOrderDetail(menuItem) != null) {
-            return true;
-        }
-        return false;
+        return findNewOrderDetail(menuItem) != null;
     }
 
     public Integer countNewItemsInCart(MenuItem menuItem) {
@@ -141,6 +98,7 @@ public class CartBean
             orderDetail = createOrderDetail(menuItem);
             order.addOrderDetail(orderDetail);
         }
+        isCartStateChanged = true;
     }
 
     private OrderDetail createOrderDetail(MenuItem menuItem) {
@@ -164,6 +122,7 @@ public class CartBean
         } else {
             throw new CartOperationRestaurantException("OrderDetail not found in the cart");
         }
+        isCartStateChanged = true;
     }
 
     private void checkEntityNotNullAndNew(OrderDetail orderDetail) throws RestaurantException {
@@ -189,6 +148,7 @@ public class CartBean
             List<OrderDetail> orderDetails = order.getOrderDetails();
             orderDetails.remove(orderDetail);
         }
+        isCartStateChanged = true;
     }
 
     /**
@@ -208,6 +168,7 @@ public class CartBean
         } else if (orderDetail.getItemQuantity() == 1) {
             orderDetails.remove(orderDetail);
         }
+        isCartStateChanged = true;
     }
 
     /*
@@ -223,6 +184,7 @@ public class CartBean
         } else {
             throw new CartOperationRestaurantException("OrderDetail not found in the cart");
         }
+        isCartStateChanged = true;
     }
 
     public void saveOrder(String guestName, RestaurantTable restaurantTable, String comments)
@@ -271,6 +233,58 @@ public class CartBean
             return true;
         }
         return false;
+    }
+
+    public CartState getCartState() {
+        if (isCartStateChanged) {
+            int nNewItems = countNewItems();
+            int nConfirmedItems = countConfirmedItems();
+            double totalOfNewItems = getTotalOfNewItems();
+            double totalOfConfirmedItems = getTotalOfConfirmedItems();
+            cartState = CartStateFactory.getCartState(nNewItems, nConfirmedItems,
+                    totalOfNewItems, totalOfConfirmedItems);
+        }
+        return cartState;
+    }
+
+    private int countNewItems() {
+        int nItems = 0;
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            if (orderDetail.isNewEntity()) {
+                nItems += orderDetail.getItemQuantity();
+            }
+        }
+        return nItems;
+    }
+
+    private int countConfirmedItems() {
+        int nItems = 0;
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            if (!orderDetail.isNewEntity()) {
+                nItems += orderDetail.getItemQuantity();
+            }
+        }
+        return nItems;
+    }
+
+    private double getTotalOfNewItems() {
+        int total = 0;
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            if (orderDetail.isNewEntity()) {
+                total += orderDetail.getItemQuantity() * orderDetail.getItemPrice();
+            }
+        }
+        return total / 100.0;
+    }
+
+    private double getTotalOfConfirmedItems() {
+        int total = 0;
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            if (!orderDetail.isNewEntity()) {
+                total += orderDetail.getItemQuantity() * orderDetail.getItemPrice();
+            }
+        }
+        return total / 100.0;
     }
 
     public Order getOrder() {

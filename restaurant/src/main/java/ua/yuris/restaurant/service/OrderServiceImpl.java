@@ -49,7 +49,7 @@ public class OrderServiceImpl
     }
 
     @Override
-    public RestaurantTable findOne(Long restaurantTableId) {
+    public RestaurantTable findRestaurantTable(Long restaurantTableId) {
         return restaurantTableRepository.findOne(restaurantTableId);
     }
 

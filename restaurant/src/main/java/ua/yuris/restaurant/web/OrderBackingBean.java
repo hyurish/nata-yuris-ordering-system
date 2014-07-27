@@ -18,6 +18,8 @@ import ua.yuris.restaurant.exception.RestaurantException;
 import ua.yuris.restaurant.model.OrderDetail;
 import ua.yuris.restaurant.model.RestaurantTable;
 import ua.yuris.restaurant.service.OrderService;
+import ua.yuris.restaurant.util.RestaurantTableUtil;
+import ua.yuris.restaurant.web.cartstate.CartState;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,9 +30,10 @@ import ua.yuris.restaurant.service.OrderService;
  */
 @ManagedBean
 @ViewScoped
-public class OrderBackingBean
-        implements Serializable {
+public class OrderBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(OrderBackingBean.class);
+    private static final long DEFAULT_RESTAURANT_TABLE_ID =
+            RestaurantTableUtil.getDefaultTableId();
 
     @ManagedProperty(value = "#{orderService}")
     private OrderService orderService;
@@ -51,7 +54,7 @@ public class OrderBackingBean
 
         restaurantTables = orderService.findAllActiveTable();
         if (cartBean.getOrder().getRestaurantTable() == null) {
-            restaurantTable = restaurantTables.get(4);
+            restaurantTable = getDefaultRestaurantTable();
         } else {
             restaurantTable = cartBean.getOrder().getRestaurantTable();
         }
@@ -60,16 +63,13 @@ public class OrderBackingBean
         }
     }
 
+    private RestaurantTable getDefaultRestaurantTable() {
+        return orderService.findRestaurantTable(DEFAULT_RESTAURANT_TABLE_ID);
+    }
+
     public String getHeader() {
-        int numberInCart = cartBean.countNewItems();
-        if (numberInCart > 0) {
-            return "Cart";
-        }
-        int numberInOrder = cartBean.countConfirmedItems();
-        if (numberInOrder > 0) {
-            return "Your Order";
-        }
-        return "Ups Your Cart is Empty";
+        CartState cartState = cartBean.getCartState();
+        return cartState.getCartHeader();
     }
 
     public void takeItem(OrderDetail orderDetail) {
@@ -102,7 +102,8 @@ public class OrderBackingBean
     }
 
     public boolean isSaveBtnEnabled() {
-        return cartBean.countNewItems() > 0;
+        CartState cartState = cartBean.getCartState();
+        return cartState.isNewItemsIn();
     }
 
     public boolean isTakeBtnEnabled(OrderDetail orderDetail) {

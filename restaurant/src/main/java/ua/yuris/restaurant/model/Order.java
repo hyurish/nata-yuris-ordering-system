@@ -80,20 +80,26 @@ public class Order
         createTime = new DateTime();
     }
 
+    public Order(OrderStatusType status) {
+        this();
+        this.status = status;
+    }
+
     public void addOrderDetail(OrderDetail orderDetail) {
         getOrderDetails().add(orderDetail);
         orderDetail.setOrder(this);
     }
 
     public String getNumber() {
-        if (isNewEntity()) {
-            return "/";
+        String number = "/";
+        if (!isNewEntity()) {
+            number += id;
         }
         if (restaurantTable != null) {
-            return restaurantTable.getTableNumber() + "/" + id;
-        } else {
-            return "/" + id;
+            number = restaurantTable.getTableNumber() + number;
         }
+
+        return number;
     }
 
     public String getGuestPreciseName() {

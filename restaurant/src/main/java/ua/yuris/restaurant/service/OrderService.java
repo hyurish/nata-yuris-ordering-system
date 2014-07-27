@@ -18,7 +18,7 @@ import ua.yuris.restaurant.web.SearchCriteria;
  * To change this template use File | Settings | File Templates.
  */
 public interface OrderService {
-    RestaurantTable findOne(Long restaurantTableId);
+    RestaurantTable findRestaurantTable(Long restaurantTableId);
 
     List<RestaurantTable> findAllActiveTable();
 
