@@ -5,7 +5,6 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:sec="http://www.springframework.org/security/tags"
                 template="/WEB-INF/templates/adminTmpl.xhtml">
 
     <ui:define name="title">Categories</ui:define>
@@ -63,7 +62,7 @@
                                 <p:commandButton id="toggler"
                                                  actionListener="#{categoriesBackingBean.onHideShowDisabled}"
                                                  update="@this categoriesTable"
-                                                 value="#{categoriesBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                                 value="#{categoriesBackingBean.disabledIncluded ? 'Hide Disabled' : 'Show disabled'}"
                                                  icon="ui-icon-calculator" />
                             </div>
                             <div class="cBoth"/>

@@ -48,14 +48,23 @@ public class MenuBackingBean implements Serializable {
 
     @PostConstruct
     public void initialize() {
+        loadCategories();
+        loadMenuItems();
+    }
+
+    private void loadCategories() {
         menuCategories = menuStateService.findAllActiveCategories();
-        if (!menuCategories.isEmpty()) {
-            setCurrentMenuCategory(menuCategories.get(INITIAL_MENU_CATEGORY_NUMBER));
+        if (currentMenuCategory == null && !menuCategories.isEmpty()) {
+            currentMenuCategory = menuCategories.get(INITIAL_MENU_CATEGORY_NUMBER);
+        }
+    }
+
+    private void loadMenuItems() {
+        if (currentMenuCategory != null) {
             menuItems = menuStateService.findAllActiveMenuItemByCategory(currentMenuCategory);
         } else {
             menuItems = new ArrayList<>();
         }
-
     }
 
     public boolean isCartEmpty() {
@@ -140,8 +149,7 @@ public class MenuBackingBean implements Serializable {
         if (currentMenuCategoryId != null) {
             try {
                 Long categoryId = Long.parseLong(currentMenuCategoryId);
-                MenuCategory menuCategory = menuStateService.findCategory(categoryId);
-                setCurrentMenuCategory(menuCategory);
+                currentMenuCategory = menuStateService.findCategory(categoryId);
                 menuItems = menuStateService.findAllActiveMenuItemByCategory(currentMenuCategory);
             } catch (NumberFormatException e) {
                 LOG.info("Invalid request parameter categoryId");

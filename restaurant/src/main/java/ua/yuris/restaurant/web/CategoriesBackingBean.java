@@ -4,11 +4,9 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.primefaces.context.RequestContext;
@@ -20,6 +18,7 @@ import org.springframework.transaction.TransactionException;
 
 import ua.yuris.restaurant.model.MenuCategory;
 import ua.yuris.restaurant.service.MenuService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,15 +29,14 @@ import ua.yuris.restaurant.service.MenuService;
  */
 @ManagedBean
 @ViewScoped
-public class CategoriesBackingBean
-        implements Serializable {
+public class CategoriesBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(CategoriesBackingBean.class);
 
     @ManagedProperty(value = "#{menuService}")
     private MenuService menuService;
 
     private List<MenuCategory> categories;
-    private boolean withDisabled;
+    private boolean isDisabledIncluded;
 
     private MenuCategory selectedMenuCategory;
 
@@ -47,11 +45,11 @@ public class CategoriesBackingBean
 
     @PostConstruct
     public void initialize() {
-        loadCategories(withDisabled);
+        loadCategories();
     }
 
-    private void loadCategories(boolean withDisabled) {
-        if (withDisabled) {
+    private void loadCategories() {
+        if (isDisabledIncluded) {
             categories = menuService.findAllCategories();
         } else {
             categories = menuService.findAllActiveCategories();
@@ -62,40 +60,28 @@ public class CategoriesBackingBean
         MenuCategory menuCategory = (MenuCategory) event.getObject();
         try {
             menuService.saveCategory(menuCategory);
+            String summary = "MenuCategory '" + menuCategory.getTitle() + "' Edited";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
-        addInfoMessageToFacesContext("MenuCategory '" + menuCategory.getTitle() + "' Edited",
-                "MenuCategory '" + menuCategory.getTitle() + "' Edited");
-    }
-
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
     public void onCancel(RowEditEvent event) {
-        addInfoMessageToFacesContext("MenuCategory editing cancelled",
-                "MenuCategory '" + ((MenuCategory) event.getObject()).getTitle() +
-                        "' editing cancelled");
+        String summary = "MenuCategory '" + ((MenuCategory) event.getObject()).getTitle() +
+                "' editing cancelled";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
     }
 
     public void onHideShowDisabled(ActionEvent actionEvent) {
-        withDisabled = !withDisabled;
-        loadCategories(withDisabled);
+        isDisabledIncluded = !isDisabledIncluded;
+        loadCategories();
     }
 
     public void onRefreshCategory() {
-        loadCategories(withDisabled);
+        loadCategories();
     }
 
     public void addCategory() {
@@ -103,26 +89,27 @@ public class CategoriesBackingBean
     }
 
     public void onDialogReturn(SelectEvent event) {
-        if (event.getObject() != null) {
-            MenuCategory menuCategory = (MenuCategory) event.getObject();
+        MenuCategory menuCategory = (MenuCategory) event.getObject();
+        menuCategory.setPriority(getNextPriority());
 
-            Integer maxPriority = menuService.getCategoryMaxPriority();
-            if (maxPriority == null) {
-                maxPriority = 0;
-            }
-            menuCategory.setPriority(++maxPriority);
-            try {
-                menuService.saveCategory(menuCategory);
-            } catch (TransactionException e) {
-                LOG.error(e.getMessage());
-                addErrorMessageToFacesContext("Database operation failed",
-                        "Database operation failed");
-                return;
-            }
-            loadCategories(withDisabled);
-            addInfoMessageToFacesContext("MenuCategory '" + menuCategory.getTitle() + "' Added",
-                    "MenuCategory '" + menuCategory.getTitle() + "' Added");
+        try {
+            menuService.saveCategory(menuCategory);
+            loadCategories();
+            String summary = "MenuCategory '" + menuCategory.getTitle() + "' Added";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
+        } catch (TransactionException e) {
+            LOG.error(e.getMessage());
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
+    }
+
+    private Integer getNextPriority() {
+        Integer maxPriority = menuService.getCategoryMaxPriority();
+        if (maxPriority == null) {
+            maxPriority = 0;
+        }
+        return ++maxPriority;
     }
 
     public List<MenuCategory> getCategories() {
@@ -141,12 +128,12 @@ public class CategoriesBackingBean
         this.menuService = menuService;
     }
 
-    public boolean getWithDisabled() {
-        return withDisabled;
+    public boolean getDisabledIncluded() {
+        return isDisabledIncluded;
     }
 
-    public void setWithDisabled(boolean withDisabled) {
-        this.withDisabled = withDisabled;
+    public void setDisabledIncluded(boolean disabledIncluded) {
+        this.isDisabledIncluded = disabledIncluded;
     }
 
     public MenuCategory getSelectedMenuCategory() {

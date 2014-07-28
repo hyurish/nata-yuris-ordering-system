@@ -71,7 +71,7 @@
                             <p:commandButton id="toggler"
                                              actionListener="#{ordersBackingBean.onHideShowDisabled}"
                                              update="@this ordersTable"
-                                             value="#{accountsBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                             value="#{accountsBackingBean.disabledIncluded ? 'Hide Disabled' : 'Show disabled'}"
                                              icon="ui-icon-calculator" />
                         </div>
                         <div class="cBoth"/>

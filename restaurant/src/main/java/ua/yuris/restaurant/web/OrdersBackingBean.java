@@ -24,6 +24,7 @@ import ua.yuris.restaurant.model.RestaurantTable;
 import ua.yuris.restaurant.model.enums.OrderStatusType;
 import ua.yuris.restaurant.service.AccountService;
 import ua.yuris.restaurant.service.OrderService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,14 +35,12 @@ import ua.yuris.restaurant.service.OrderService;
  */
 @ManagedBean
 @ViewScoped
-public class OrdersBackingBean
-        implements Serializable {
+public class OrdersBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(OrdersBackingBean.class);
 
 
     @ManagedProperty(value = "#{orderService}")
     private OrderService orderService;
-
     @ManagedProperty(value = "#{accountService}")
     private AccountService accountService;
 
@@ -73,53 +72,42 @@ public class OrdersBackingBean
         Order order = (Order) event.getObject();
         try {
             order = orderService.saveOrder(order);
+            String summary = "Order '" + order.getNumber() + "' Edited";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
 
-        addInfoMessageToFacesContext("Order '" + order.getNumber() + "' Edited",
-                "Order '" + order.getNumber() + "' Edited");
     }
 
 
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
     public void onCancel(RowEditEvent event) {
-        addInfoMessageToFacesContext("Order '" + ((Order) event.getObject()).getNumber() +
-                "' editing cancelled",
-                "Order '" + ((Order) event.getObject()).getNumber() + "' editing cancelled");
+        String summary = "Order '" + ((Order) event.getObject()).getNumber() +
+                "' editing cancelled";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
     }
 
     public void onOrderInfoEdit(RowEditEvent event) {
         OrderDetail orderDetail = (OrderDetail) event.getObject();
         try {
             orderDetail = orderService.saveOrderInfo(orderDetail);
+            String summary = "Order Details '" + orderDetail.getMenuItem().getTitle() + "' Edited";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
 
-        addInfoMessageToFacesContext("Order Details '" + orderDetail.getMenuItem().getTitle() +
-                "' Edited", "Order Details '" + orderDetail.getMenuItem().getTitle() + "' Edited");
     }
 
     public void onOrderInfoCancel(RowEditEvent event) {
-        addInfoMessageToFacesContext("Order Details '" +
-                ((OrderDetail) event.getObject()).getMenuItem().getTitle() + "' editing cancelled",
-                "Order Details '" + ((OrderDetail) event.getObject()).getMenuItem().getTitle() +
-                        "' editing cancelled");
+        OrderDetail orderDetail = (OrderDetail) event.getObject();
+        String summary = "Order Details '" + orderDetail.getMenuItem().getTitle() +
+                "' editing cancelled";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
     }
 
     public void serviceStateChange() {

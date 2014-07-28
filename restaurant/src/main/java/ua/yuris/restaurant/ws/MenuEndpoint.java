@@ -57,7 +57,7 @@ public class MenuEndpoint {
     public MenuResponse handleMenuRequest(@RequestPayload Element menuRequest)
             throws Exception {
 
-        List<MenuCategory> categories = menuService.findAllActiveCategories();
+        List<MenuCategory> categories = menuService.findAllCategories(false);
         MenuResponse menuResponse = createMenuResponse(categories);
 
         return menuResponse;
@@ -67,7 +67,8 @@ public class MenuEndpoint {
         MenuResponse menuResponse = new MenuResponse();
         CategoryType categoryType = null;
         for (MenuCategory menuCategory : categories) {
-            List<MenuItem> menuItems = menuService.findAllActiveMenuItemsByCategory(menuCategory);
+            List<MenuItem> menuItems =
+                    menuService.findAllMenuItemsByCategory(menuCategory, false);
             categoryType = createCategoryType(menuCategory, menuItems);
             menuResponse.getCategories().add(categoryType);
         }
@@ -96,9 +97,10 @@ public class MenuEndpoint {
         Long categoryId = Long.parseLong(categoryIdExpression.valueOf(menuRequest));
 
         MenuCategory menuCategory = menuService.findCategory(categoryId);
-        List<MenuItem> menuItems = menuService.findAllActiveMenuItemsByCategory(menuCategory);
+        List<MenuItem> menuItems = menuService.findAllMenuItemsByCategory(menuCategory, false);
 
-        MenuByCategoryIdResponse menuResponse = createMenuByCategoryIdResponse(menuCategory, menuItems);
+        MenuByCategoryIdResponse menuResponse =
+                createMenuByCategoryIdResponse(menuCategory, menuItems);
 
         return menuResponse;
     }

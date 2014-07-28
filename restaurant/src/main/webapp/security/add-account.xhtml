@@ -35,10 +35,10 @@
 
                             <h:outputText styleClass="orderLabel" value="Username: "/>
                             <p:inputText value="#{addAccountBackingBean.account.username}"
-                                         required="true" validator="#{addAccountBackingBean.usernameAvailabilityCheck}"
+                                         required="true" validator="#{addAccountBackingBean.usernameAvailabilityValidation}"
                                          maxlength="100" label="Username"
                                     >
-                                <p:ajax event="keyup" update="messages" listener="#{addAccountBackingBean.checkAvailableUsername}"/>
+                                <p:ajax event="keyup" update="messages" listener="#{addAccountBackingBean.onUsernameChanged}"/>
                             </p:inputText>
 
                             <h:outputText styleClass="orderLabel" value="Password: "/>

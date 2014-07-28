@@ -19,6 +19,7 @@ import ua.yuris.restaurant.model.MenuCategory;
 import ua.yuris.restaurant.model.MenuItem;
 import ua.yuris.restaurant.model.enums.CookingPlaceType;
 import ua.yuris.restaurant.service.MenuService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,8 +30,7 @@ import ua.yuris.restaurant.service.MenuService;
  */
 @ManagedBean
 @ViewScoped
-public class AddMenuItemBackingBean
-        implements Serializable {
+public class AddMenuItemBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(AddCategoryBackingBean.class);
 
     @ManagedProperty(value = "#{menuService}")
@@ -53,14 +53,63 @@ public class AddMenuItemBackingBean
 
     @PostConstruct
     public void initialize() {
+        loadMenuCategories();
+    }
+
+    private void loadMenuCategories() {
         menuCategories = menuService.findAllActiveCategories();
     }
 
     public void onPreRenderView(ComponentSystemEvent event) {
-        if (this.selectedMenuCategory != null) {
-            if (menuCategory == null)
+        if (menuCategory == null) {
                 menuCategory = selectedMenuCategory;
         }
+    }
+
+    public String onCancel() {
+        String summary = "Menu Item creation cancelled";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
+
+        return "menu-items?faces-redirect=true&amp;categoryId=" + getMenuCategory().getId();
+    }
+
+    public String onSave() {
+        MenuItem menuItem = createMenuItem();
+
+        try {
+            menuService.saveMenuItem(menuItem);
+        } catch (TransactionException e) {
+            LOG.error(e.getMessage());
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
+            return "";
+        }
+        String summary = "Menu Item '" + menuItem.getTitle() + "' Added";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
+
+        return "menu-items?faces-redirect=true&amp;categoryId=" + getMenuCategory().getId();
+    }
+
+    private MenuItem createMenuItem() {
+        MenuItem menuItem = new MenuItem();
+        menuItem.setTitle(title);
+        menuItem.setDescription(description);
+        menuItem.setPrettyPrice(price);
+        menuItem.setMenuCategory(menuCategory);
+        menuItem.setCookingPlace(cookingPlace);
+        menuItem.setMeasure(measure);
+        menuItem.setPicture("default.jpg");
+        menuItem.setActive(true);
+        menuItem.setPriority(getNextPriority());
+        return menuItem;
+    }
+
+    private Integer getNextPriority() {
+        Integer maxPriority = menuService.getMenuItemMaxPriority();
+        if (maxPriority == null) {
+            maxPriority = 0;
+        }
+        return ++maxPriority;
     }
 
     public String getDescription() {
@@ -143,58 +192,4 @@ public class AddMenuItemBackingBean
         this.selectedMenuCategory = selectedMenuCategory;
     }
 
-    public String onCancel() {
-        FacesMessage msg = new FacesMessage("Menu Item creation cancelled", "");
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-
-        return "menu-items?faces-redirect=true&amp;categoryId=" + getMenuCategory().getId();
-    }
-
-    public String onSave() {
-        MenuItem menuItem = createMenuItem();
-
-        try {
-            menuService.saveMenuItem(menuItem);
-        } catch (TransactionException e) {
-            LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed",
-                    "Database operation failed");
-            return "";
-        }
-        addInfoMessageToFacesContext("Menu Item '" + menuItem.getTitle() + "' Added",
-                "Menu Item '" + menuItem.getTitle() + "' Added");
-
-        return "menu-items?faces-redirect=true&amp;categoryId=" + getMenuCategory().getId();
-    }
-
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private MenuItem createMenuItem() {
-        MenuItem menuItem = new MenuItem();
-        menuItem.setTitle(title);
-        menuItem.setDescription(description);
-        menuItem.setPrettyPrice(price);
-        menuItem.setMenuCategory(menuCategory);
-        menuItem.setCookingPlace(cookingPlace);
-        menuItem.setMeasure(measure);
-        menuItem.setPicture("default.jpg");
-        menuItem.setActive(true);
-
-        Integer maxPriority = menuService.getMenuItemMaxPriority();
-        if (maxPriority == null) {
-            maxPriority = 0;
-        }
-        menuItem.setPriority(++maxPriority);
-        return menuItem;
-    }
 }

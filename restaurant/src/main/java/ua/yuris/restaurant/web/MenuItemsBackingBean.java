@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
@@ -22,6 +21,7 @@ import ua.yuris.restaurant.model.MenuCategory;
 import ua.yuris.restaurant.model.MenuItem;
 import ua.yuris.restaurant.model.enums.CookingPlaceType;
 import ua.yuris.restaurant.service.MenuService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,12 +39,12 @@ public class MenuItemsBackingBean
     @ManagedProperty(value = "#{menuService}")
     private MenuService menuService;
 
-    private List<MenuCategory> categories;
+    private List<MenuCategory> menuCategories;
     private List<MenuItem> menuItems;
 
     private CookingPlaceType[] cookingPlaces = CookingPlaceType.values();
     private MenuCategory selectedMenuCategory;
-    private boolean withDisabled;
+    private boolean isDisabledIncluded;
     private MenuItem selectedMenuItem;
 
     public MenuItemsBackingBean() {
@@ -52,18 +52,22 @@ public class MenuItemsBackingBean
 
     @PostConstruct
     public void initialize() {
-        categories = menuService.findAllActiveCategories();
+        loadMenuCategories();
 
         selectedMenuCategory = getCategoryAsParam("categoryId");
         if (selectedMenuCategory == null) {
-            if (!categories.isEmpty()) {
-                setSelectedMenuCategory(categories.get(0));
+            if (!menuCategories.isEmpty()) {
+                setSelectedMenuCategory(menuCategories.get(0));
             } else {
                 LOG.info("Categories list is empty");
             }
         }
 
-        loadMenuItems(selectedMenuCategory, withDisabled);
+        loadMenuItems();
+    }
+
+    private void loadMenuCategories() {
+        menuCategories = menuService.findAllActiveCategories();
     }
 
     private MenuCategory getCategoryAsParam(String param) {
@@ -91,11 +95,11 @@ public class MenuItemsBackingBean
         return menuCategory;
     }
 
-    private void loadMenuItems(MenuCategory menuCategory, boolean withDisabled) {
-        if (withDisabled) {
-            menuItems = menuService.findAllMenuItemsByCategory(menuCategory);
+    private void loadMenuItems() {
+        if (isDisabledIncluded) {
+            menuItems = menuService.findAllMenuItemsByCategory(selectedMenuCategory);
         } else {
-            menuItems = menuService.findAllActiveMenuItemsByCategory(menuCategory);
+            menuItems = menuService.findAllActiveMenuItemsByCategory(selectedMenuCategory);
         }
     }
 
@@ -103,16 +107,77 @@ public class MenuItemsBackingBean
         return menuService;
     }
 
+    public void changeCategory(MenuCategory menuCategory) {
+        selectedMenuCategory = menuCategory;
+        loadMenuItems();
+    }
+
+    public void onEdit(RowEditEvent event) {
+        MenuItem menuItem = (MenuItem) event.getObject();
+        try {
+            menuService.saveMenuItem(menuItem);
+            String summary = "Menu Item '" + menuItem.getTitle() + "' Edited";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
+        } catch (TransactionException e) {
+            LOG.error(e.getMessage());
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
+        }
+    }
+
+    public void onCancel(RowEditEvent event) {
+        String summary = "MenuItem '" + ((MenuItem) event.getObject()).getTitle() +
+                "'  editing cancelled";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
+    }
+
+    public void onHideShowDisabled(ActionEvent actionEvent) {
+        isDisabledIncluded = !isDisabledIncluded;
+        loadMenuItems();
+    }
+
+    public void onRefreshMenuItems() {
+        loadMenuItems();
+    }
+
+    public void onChooseImage(MenuItem menuItem) {
+        selectedMenuItem = menuItem;
+        RequestContext.getCurrentInstance().openDialog("select-image");
+    }
+
+    public void onImageChosen(SelectEvent event) {
+        if (event.getObject() != null) {
+            String newImage = (String) event.getObject();
+
+            String oldImage = selectedMenuItem.getPicture();
+            if (!oldImage.equals(newImage)) {
+                selectedMenuItem.setPicture(newImage);
+
+                try {
+                    menuService.saveMenuItem(selectedMenuItem);
+                    String summary = "Icon of '" + selectedMenuItem.getTitle() + "' Edited";
+                    FacesMessagesUtil.addInfoMessageToFacesContext(summary);
+                } catch (TransactionException e) {
+                    LOG.error(e.getMessage());
+                    String summary = "Database operation failed";
+                    FacesMessagesUtil.addErrorMessageToFacesContext(summary);
+                }
+            }
+
+        }
+
+    }
+
     public void setMenuService(MenuService menuService) {
         this.menuService = menuService;
     }
 
-    public List<MenuCategory> getCategories() {
-        return categories;
+    public List<MenuCategory> getMenuCategories() {
+        return menuCategories;
     }
 
-    public void setCategories(List<MenuCategory> categories) {
-        this.categories = categories;
+    public void setMenuCategories(List<MenuCategory> menuCategories) {
+        this.menuCategories = menuCategories;
     }
 
     public List<MenuItem> getMenuItems() {
@@ -131,12 +196,12 @@ public class MenuItemsBackingBean
         this.cookingPlaces = cookingPlaces;
     }
 
-    public boolean isWithDisabled() {
-        return withDisabled;
+    public boolean isDisabledIncluded() {
+        return isDisabledIncluded;
     }
 
-    public void setWithDisabled(boolean withDisabled) {
-        this.withDisabled = withDisabled;
+    public void setDisabledIncluded(boolean disabledIncluded) {
+        this.isDisabledIncluded = disabledIncluded;
     }
 
     public MenuCategory getSelectedMenuCategory() {
@@ -153,78 +218,5 @@ public class MenuItemsBackingBean
 
     public void setSelectedMenuItem(MenuItem selectedMenuItem) {
         this.selectedMenuItem = selectedMenuItem;
-    }
-
-    public void changeCategory(MenuCategory menuCategory) {
-        setSelectedMenuCategory(menuCategory);
-        loadMenuItems(selectedMenuCategory, withDisabled);
-    }
-
-    public void onEdit(RowEditEvent event) {
-        MenuItem menuItem = (MenuItem) event.getObject();
-        try {
-            menuService.saveMenuItem(menuItem);
-        } catch (TransactionException e) {
-            LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
-        }
-        addInfoMessageToFacesContext("Menu Item '" + menuItem.getTitle() + "' Edited",
-                "Menu Item '" + menuItem.getTitle() + "' Edited");
-    }
-
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-    public void onCancel(RowEditEvent event) {
-        addInfoMessageToFacesContext("MenuItem '" + ((MenuItem) event.getObject()).getTitle() +
-                "'  editing cancelled",
-                "MenuItem '" + ((MenuItem) event.getObject()).getTitle() + "'  editing cancelled");
-    }
-
-    public void onHideShowDisabled(ActionEvent actionEvent) {
-        withDisabled = !withDisabled;
-        loadMenuItems(selectedMenuCategory, withDisabled);
-    }
-
-    public void onRefreshMenuItems() {
-        loadMenuItems(selectedMenuCategory, withDisabled);
-    }
-
-    public void chooseImage(MenuItem menuItem) {
-        setSelectedMenuItem(menuItem);
-        RequestContext.getCurrentInstance().openDialog("select-image");
-    }
-
-    public void onImageChosen(SelectEvent event) {
-        if (event.getObject() != null) {
-            String image = (String) event.getObject();
-
-            if (!getSelectedMenuItem().getPicture().equals(image)) {
-                getSelectedMenuItem().setPicture(image);
-
-                try {
-                    menuService.saveMenuItem(getSelectedMenuItem());
-                } catch (TransactionException e) {
-                    LOG.error(e.getMessage());
-                    addErrorMessageToFacesContext("Database operation failed",
-                            "Database operation failed");
-                    return;
-                }
-
-                addInfoMessageToFacesContext("Icon of '" + getSelectedMenuItem().getTitle() +
-                        "' Edited", "Icon of '" + getSelectedMenuItem().getTitle() + "' Edited");
-            }
-
-        }
-
     }
 }

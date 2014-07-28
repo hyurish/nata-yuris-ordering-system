@@ -44,11 +44,14 @@ public class AccountServiceImpl
 
         Account account;
 
+/*
         try {
             account = accountRepository.findByUsername(username);
         } catch (EmptyResultDataAccessException e) {
             throw new UsernameNotFoundException("Username don't exists!");
         }
+*/
+        account = accountRepository.findByUsername(username);
 
         if (account == null) {
             throw new UsernameNotFoundException("Username don't exists!");
@@ -64,10 +67,8 @@ public class AccountServiceImpl
 
         Integer nAccounts = 0;
         nAccounts = accountRepository.countByUsername(username);
-        if (nAccounts < 1) {
-            return true;
-        }
-        return false;
+
+        return nAccounts < 1;
     }
 
     @Override

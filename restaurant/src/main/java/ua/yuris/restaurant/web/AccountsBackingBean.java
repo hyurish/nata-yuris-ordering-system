@@ -23,6 +23,7 @@ import ua.yuris.restaurant.model.Account;
 import ua.yuris.restaurant.model.Role;
 import ua.yuris.restaurant.service.AccountService;
 import ua.yuris.restaurant.service.RoleStateService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,29 +34,27 @@ import ua.yuris.restaurant.service.RoleStateService;
  */
 @ManagedBean
 @ViewScoped
-public class AccountsBackingBean
-        implements Serializable {
+public class AccountsBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(AccountsBackingBean.class);
 
     @ManagedProperty(value = "#{roleStateService}")
     private RoleStateService roleStateService;
-
     @ManagedProperty(value = "#{accountService}")
     private AccountService accountService;
 
     private List<Account> accounts;
-    private boolean withDisabled;
+    private boolean isDisabledIncluded;
 
     public AccountsBackingBean() {
     }
 
     @PostConstruct
     public void initialize() {
-        loadAccounts(withDisabled);
+        loadAccounts();
     }
 
-    private void loadAccounts(boolean withDisabled) {
-        if (withDisabled) {
+    private void loadAccounts() {
+        if (isDisabledIncluded) {
             accounts = accountService.findAllAccounts();
         } else {
             accounts = accountService.findAllActiveAccounts();
@@ -66,33 +65,20 @@ public class AccountsBackingBean
         Account account = (Account) event.getObject();
         try {
             account = accountService.saveAccount(account);
+            String summary = "Account '" + account.getUsername() + "' Edited";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
-        addInfoMessageToFacesContext("Account '" + account.getUsername() + "' Edited",
-                "Account '" + account.getUsername() + "' Edited");
     }
 
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    public void usernameAvailabilityCheck(Account account, FacesContext context,
-                                          UIComponent component, Object value) {
+    public void usernameAvailabilityValidation(Account account, FacesContext context,
+                                               UIComponent component, Object value) {
         if (value == null) return;
-        boolean available = accountService.checkAvailableUsername(value.toString(), account);
 
-        if (!available) {
+        if (isUsernameExist(value.toString(), account)) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Username validation failed",
                     "Username " + value.toString() + " already exists");
@@ -100,18 +86,23 @@ public class AccountsBackingBean
         }
     }
 
+    private boolean isUsernameExist(String username, Account account) {
+        return !accountService.checkAvailableUsername(username, account);
+    }
+
     public void onCancel(RowEditEvent event) {
-        addInfoMessageToFacesContext("Account editing cancelled",
-                ((Account) event.getObject()).getUsername());
+        String summary = "Account '" + ((Account) event.getObject()).getUsername() + "' editing " +
+                "cancelled";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
     }
 
     public void onHideShowDisabled(ActionEvent actionEvent) {
-        withDisabled = !withDisabled;
-        loadAccounts(withDisabled);
+        isDisabledIncluded = !isDisabledIncluded;
+        loadAccounts();
     }
 
     public void onRefreshAccounts() {
-        loadAccounts(withDisabled);
+        loadAccounts();
     }
 
     public Set<Role> getRoles() {
@@ -142,11 +133,11 @@ public class AccountsBackingBean
         this.roleStateService = roleStateService;
     }
 
-    public boolean isWithDisabled() {
-        return withDisabled;
+    public boolean isDisabledIncluded() {
+        return isDisabledIncluded;
     }
 
-    public void setWithDisabled(boolean withDisabled) {
-        this.withDisabled = withDisabled;
+    public void setDisabledIncluded(boolean disabledIncluded) {
+        this.isDisabledIncluded = disabledIncluded;
     }
 }

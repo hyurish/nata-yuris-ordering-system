@@ -12,7 +12,7 @@
 
 <ui:define name="west">
     <p:layoutUnit position="west" size="315"
-                  header="#{waiterBackingBean.waiter.firstName}'s orders"
+                  header="#{waiterBackingBean.currentWaiter.firstName}'s orders"
                   resizable="false" closable="false" collapsible="true"
                   styleClass="admin"
             >
@@ -45,7 +45,7 @@
                         <p:commandButton id="toggler"
                                          actionListener="#{waiterBackingBean.onHideShowDisabled}"
                                          update="@form"
-                                         value="#{waiterBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                         value="#{waiterBackingBean.disabledIncluded ? 'Hide Disabled' : 'Show disabled'}"
                                          icon="ui-icon-calculator" />
                     </div>
                     <div class="cBoth"/>
@@ -201,7 +201,7 @@
                                              disabled="#{sec:areNotGranted('PERM_ADMIN_ORDERS')}"
                                     >
                                 <f:selectItems value="#{waiterBackingBean.waiters}"
-                                               var="waiter"
+                                               var="currentWaiter"
                                                itemLabel="#{waiter.fullName}"
                                                itemValue="#{waiter}" />
                             </p:selectOneMenu>
@@ -420,7 +420,7 @@
 
             <p:poll interval="30" listener="#{waiterBackingBean.onNoMansOrdersCheck}" />
 
-            <ui:repeat value="#{waiterBackingBean.nobodyOrders}" var="order">
+            <ui:repeat value="#{waiterBackingBean.noManOrders}" var="order">
                 <div class="left nobodyOrderContainer" >
 
                     <div class="order orderEnabled">

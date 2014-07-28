@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 
@@ -37,7 +38,6 @@ public class OrderBackingBean implements Serializable {
 
     @ManagedProperty(value = "#{orderService}")
     private OrderService orderService;
-
     @ManagedProperty(value = "#{cartBean}")
     private CartBean cartBean;
 
@@ -120,8 +120,8 @@ public class OrderBackingBean implements Serializable {
     }
 
     public String closeOrder() {
-        HttpSession session = (HttpSession) FacesContext.getCurrentInstance().
-                getExternalContext().getSession(false);
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);
         if (session != null) {
             session.invalidate();
         }

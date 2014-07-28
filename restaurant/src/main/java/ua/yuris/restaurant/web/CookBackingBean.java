@@ -4,11 +4,9 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
 
 import org.primefaces.context.RequestContext;
 import org.slf4j.Logger;
@@ -20,6 +18,7 @@ import ua.yuris.restaurant.model.enums.CookingPlaceType;
 import ua.yuris.restaurant.model.enums.OrderStatusType;
 import ua.yuris.restaurant.service.AccountService;
 import ua.yuris.restaurant.service.OrderService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,43 +29,37 @@ import ua.yuris.restaurant.service.OrderService;
  */
 @ManagedBean
 @ViewScoped
-public class CookBackingBean
-        implements Serializable {
+public class CookBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(CookBackingBean.class);
+    private static final int NUMBER_OF_ORDER_DECORATION_STYLES = 3;
 
     @ManagedProperty(value = "#{orderService}")
     private OrderService orderService;
-
     @ManagedProperty(value = "#{accountService}")
     private AccountService accountService;
 
     private List<OrderDetail> notCookedOrderDetails;
 
-    private int orderCount;
-    private Long lastOrderId;
+    private int orderIndex;
+    private Long lastOrderId = 0L;
 
     public CookBackingBean() {
     }
 
     @PostConstruct
     public void initialize() {
-        setNotCookedOrderDetails(loadNotCookedOrderDetails());
+        loadNotCookedOrderDetails();
     }
 
-    private List<OrderDetail> loadNotCookedOrderDetails() {
-        orderCount = 0;
-        lastOrderId = 0L;
-        return orderService.findAllOrderInfoByCookedIsFalseAndOrderStatus(CookingPlaceType.KITCHEN,
-                OrderStatusType.SUBMITTED);
+    private void loadNotCookedOrderDetails() {
+        notCookedOrderDetails = orderService.findAllOrderInfoByCookedIsFalseAndOrderStatus(
+                CookingPlaceType.KITCHEN, OrderStatusType.SUBMITTED);
     }
 
     public String getOrderDetailRowStyleClass(OrderDetail orderDetail) {
-        if (!lastOrderId.equals(orderDetail.getOrder().getId())) {
-            orderCount++;
-            lastOrderId = orderDetail.getOrder().getId();
-        }
-        int i = orderCount % 3;
-        switch (i) {
+        fixOrderIndex(orderDetail);
+        int decorationStyleIndex = orderIndex % NUMBER_OF_ORDER_DECORATION_STYLES;
+        switch (decorationStyleIndex) {
             case 0:
                 return "green-bg";
             case 1:
@@ -77,34 +70,28 @@ public class CookBackingBean
         return "";
     }
 
+    private void fixOrderIndex(OrderDetail orderDetail) {
+        Long currentOrderId = orderDetail.getOrder().getId();
+        if (!lastOrderId.equals(currentOrderId)) {
+            lastOrderId = currentOrderId;
+            orderIndex++;
+        }
+    }
+
     public void serviceCookedValueChange(OrderDetail orderDetail) {
         try {
             orderService.saveOrderInfo(orderDetail);
+            String summary = "Cooked status changed: " + orderDetail.getMenuItem().getTitle();
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed",
-                    "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
-
-        addInfoMessageToFacesContext("Cooked status changed: " +
-                orderDetail.getMenuItem().getTitle(),
-                "Cooked status changed: " + orderDetail.getMenuItem().getTitle());
     }
 
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
     public void onNewOrdersCheck() {
-        setNotCookedOrderDetails(loadNotCookedOrderDetails());
+        loadNotCookedOrderDetails();
         RequestContext.getCurrentInstance().update("orderDetailsForm");
     }
 

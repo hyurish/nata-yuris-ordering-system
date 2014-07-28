@@ -6,11 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
 
 import org.joda.time.DateTime;
 import org.primefaces.context.RequestContext;
@@ -34,6 +32,7 @@ import ua.yuris.restaurant.model.enums.OrderStatusType;
 import ua.yuris.restaurant.service.AccountService;
 import ua.yuris.restaurant.service.MenuStateService;
 import ua.yuris.restaurant.service.OrderService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,40 +43,36 @@ import ua.yuris.restaurant.service.OrderService;
  */
 @ManagedBean
 @ViewScoped
-public class WaiterBackingBean
-        implements Serializable {
+public class WaiterBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(WaiterBackingBean.class);
     private static final long FIRST_ORDER_IN_SYSTEM_ID = 1L;
 
     @ManagedProperty(value = "#{orderService}")
     private OrderService orderService;
-
     @ManagedProperty(value = "#{accountService}")
     private AccountService accountService;
-
     @ManagedProperty(value = "#{menuStateService}")
     private MenuStateService menuStateService;
 
-    private Account waiter;
     private List<Order> waiterOrders;
     private Order selectedOrder;
-
-    private Order selectedNobodyOrder;
-    private List<Order> nobodyOrders;
-
-    private boolean withDisabled;
-    private OrderStatusType selectedOrderStatus;
-
     private Order editableOrder;
-    private List<Account> waiters;
-    private List<RestaurantTable> restaurantTables;
-    private List<OrderStatusType> statuses = Arrays.asList(OrderStatusType.values());
-    private List<OrderStatusType> restrictedStatuses = new ArrayList<>();
-
-    private MenuCategory selectedMenuCategory;
     private OrderDetail selectedOrderDetail;
 
-    private Order lastNoMansOrder;
+    private List<Order> noManOrders;
+    private Order selectedNoManOrder;
+    private Order lastNoManOrder;
+
+    private boolean isDisabledIncluded;
+    private OrderStatusType selectedOrderStatus;
+
+    private List<Account> waiters;
+    private Account currentWaiter;
+    private List<RestaurantTable> restaurantTables;
+    private MenuCategory selectedMenuCategory;
+    private List<OrderStatusType> statuses = Arrays.asList(OrderStatusType.values());
+    // Order statuses the currentWaiter can choose (except PAID)
+    private List<OrderStatusType> restrictedStatuses;
 
     public WaiterBackingBean() {
     }
@@ -85,84 +80,82 @@ public class WaiterBackingBean
     @PostConstruct
     public void initialize() {
         restaurantTables = orderService.findAllActiveTable();
-
-        restrictedStatuses.add(OrderStatusType.SUBMITTED);
-        restrictedStatuses.add(OrderStatusType.UNPAID);
-
+        populateRestrictedStatuses();
         selectedOrderStatus = OrderStatusType.SUBMITTED;
 
         waiters = accountService.findAllAccountByRoleDescription("ROLE_WAITER");
-        waiter = getCurrentWaiter();
-        if (waiter != null) {
-            setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+        currentWaiter = getAuthorizedWaiter();
+        if (currentWaiter != null) {
+            loadWaiterOrders();
         }
-        setNobodyOrders(loadNobodyOrders());
-        lastNoMansOrder = orderService.findOrder(FIRST_ORDER_IN_SYSTEM_ID);
+        loadNoManOrders();
+        lastNoManOrder = orderService.findOrder(FIRST_ORDER_IN_SYSTEM_ID);
 
     }
 
-    private List<Order> loadOrders(OrderStatusType selectedOrderStatus, boolean withDisabled,
-                                   Account waiter) {
-        if (withDisabled) {
-            return orderService.findAllOrderByWaiterAndStatus(waiter, selectedOrderStatus);
+    private void populateRestrictedStatuses() {
+        restrictedStatuses = new ArrayList<>();
+        restrictedStatuses.add(OrderStatusType.SUBMITTED);
+        restrictedStatuses.add(OrderStatusType.UNPAID);
+    }
+
+    private void loadWaiterOrders() {
+        if (isDisabledIncluded) {
+            waiterOrders = orderService.findAllOrderByWaiterAndStatus(currentWaiter,
+                    selectedOrderStatus);
         } else {
-            return orderService.findAllActiveOrderByWaiterAndStatus(waiter, selectedOrderStatus);
+            waiterOrders = orderService.findAllActiveOrderByWaiterAndStatus(currentWaiter,
+                    selectedOrderStatus);
         }
     }
 
-    private List<Order> loadNobodyOrders() {
-        return orderService.findAllOrderByWaiterIsNull();
+    private void loadNoManOrders() {
+        noManOrders = orderService.findAllOrderByWaiterIsNull();
     }
 
     public void onRefreshWaiterOrder() {
-        setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+        loadWaiterOrders();
     }
 
     public void onAddWaiterOrder() {
-        editableOrder = new Order();
-        editableOrder.setOrderTime(new DateTime());
-        Account waiter = getCurrentWaiter();
+        editableOrder = createOrder();
+    }
+
+    private Order createOrder() {
+        Order order = new Order(OrderStatusType.SUBMITTED);
+        order.setOrderTime(new DateTime());
+        Account waiter = getAuthorizedWaiter();
         if (waiter != null) {
-            editableOrder.setWaiter(waiter);
+            order.setWaiter(waiter);
         }
+        return order;
     }
 
     public void serviceStateChange() {
-        setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+        loadWaiterOrders();
     }
 
     public void onHideShowDisabled() {
-        withDisabled = !withDisabled;
-        setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+        isDisabledIncluded = !isDisabledIncluded;
+        loadWaiterOrders();
     }
 
     public void acceptOrder(Order order) {
-        setSelectedNobodyOrder(order);
-        selectedNobodyOrder.setWaiter(waiter);
+        selectedNoManOrder = order;
+        selectedNoManOrder.setWaiter(currentWaiter);
 
         try {
-            orderService.saveOrder(selectedNobodyOrder);
-            setNobodyOrders(loadNobodyOrders());
-            setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+            orderService.saveOrder(selectedNoManOrder);
+            loadNoManOrders();
+            loadWaiterOrders();
+
+            String summary = "Order '" + selectedNoManOrder.getNumber() + "' accepted";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
-        addInfoMessageToFacesContext("Order '" + selectedNobodyOrder.getNumber() + "' accepted",
-                "Order '" + selectedNobodyOrder.getNumber() + "' accepted");
-    }
-
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
     public void onRowSelect(SelectEvent event) {
@@ -190,22 +183,19 @@ public class WaiterBackingBean
         try {
             orderService.saveOrder(selectedOrder);
             selectedOrderStatus = selectedOrder.getStatus();
-            setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+            loadWaiterOrders();
             editableOrder = getOrderCopy(selectedOrder);
+            String summary = "Order '" + selectedOrder.getNumber() + "' printed";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
-        addInfoMessageToFacesContext("Order '" + selectedOrder.getNumber() + "' printed",
-                "Order '" + selectedOrder.getNumber() + "' printed");
     }
 
     public boolean isPaid() {
-        if (editableOrder.getStatus() != null && editableOrder.getStatus() == OrderStatusType.PAID) {
-            return true;
-        }
-        return false;
+        return editableOrder != null && editableOrder.getStatus() == OrderStatusType.PAID;
     }
 
     public void onCancel() {
@@ -217,15 +207,16 @@ public class WaiterBackingBean
         try {
             selectedOrder = orderService.saveOrder(selectedOrder);
             selectedOrderStatus = selectedOrder.getStatus();
-            setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+            loadWaiterOrders();
             editableOrder = getOrderCopy(selectedOrder);
+
+            String summary = "Order '" + selectedOrder.getNumber() + "' saved";
+            FacesMessagesUtil.addInfoMessageToFacesContext(summary);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
-            return;
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
-        addInfoMessageToFacesContext("Order '" + selectedOrder.getNumber() + "' saved",
-                "Order '" + selectedOrder.getNumber() + "' saved");
     }
 
     public void onBack() {
@@ -266,19 +257,23 @@ public class WaiterBackingBean
     }
 
     public void onTakeMenuItem(OrderDetail orderDetail) {
-        try{
+        try {
             checkEntityNotNullAndNew(orderDetail);
+            decreaseOrRemoveMenuItem(orderDetail);
         } catch (RestaurantException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext(e.getMessage(), e.getMessage());
-            return;
+            String summary = "Menu item quantity can't be reduced";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
+    }
 
+    private void decreaseOrRemoveMenuItem(OrderDetail orderDetail) {
         if (orderDetail.getItemQuantity() == 1) {
             editableOrder.getOrderDetails().remove(orderDetail);
-        }
-        if (orderDetail.getItemQuantity() > 1) {
+        } else if (orderDetail.getItemQuantity() > 1) {
             orderDetail.setItemQuantity(orderDetail.getItemQuantity() - 1);
+        } else {
+            throw new RestaurantException("Menu item quantity less then 1");
         }
     }
 
@@ -304,19 +299,19 @@ public class WaiterBackingBean
 
     public void onNoMansOrdersCheck() {
         Order order = orderService.getLastNoMansOrder();
-        if (order != null && order.getOrderTime().isAfter(lastNoMansOrder.getOrderTime())) {
-            setLastNoMansOrder(order);
-            setNobodyOrders(loadNobodyOrders());
+        if (order != null && order.getOrderTime().isAfter(lastNoManOrder.getOrderTime())) {
+            setLastNoManOrder(order);
+            loadNoManOrders();
             RequestContext.getCurrentInstance().update("nobodyOrdersForm");
         }
     }
 
     public void onCookedCheck() {
-        setWaiterOrders(loadOrders(selectedOrderStatus, withDisabled, waiter));
+        loadWaiterOrders();
         RequestContext.getCurrentInstance().update("waiterOrdersForm");
     }
 
-    private Account getCurrentWaiter() {
+    private Account getAuthorizedWaiter() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Account currentUser = (Account) authentication.getPrincipal();
         for (GrantedAuthority authority : currentUser.getAuthorities()) {
@@ -345,7 +340,7 @@ public class WaiterBackingBean
         List<OrderDetail> orderDetails = new ArrayList<>();
         OrderDetail detail;
         for (OrderDetail orderDetail : order.getOrderDetails()) {
-            detail = getOrderDetail(orderDetail);
+            detail = getOrderDetailCopy(orderDetail);
             detail.setOrder(orderCopy);
             orderDetails.add(detail);
         }
@@ -353,7 +348,7 @@ public class WaiterBackingBean
         return orderCopy;
     }
 
-    private OrderDetail getOrderDetail(OrderDetail orderDetail) {
+    private OrderDetail getOrderDetailCopy(OrderDetail orderDetail) {
         OrderDetail orderDetailCopy = new OrderDetail();
         orderDetailCopy.setItemQuantity(orderDetail.getItemQuantity());
         orderDetailCopy.setCooked(orderDetail.getCooked());
@@ -405,20 +400,20 @@ public class WaiterBackingBean
         this.selectedOrder = selectedOrder;
     }
 
-    public List<Order> getNobodyOrders() {
-        return nobodyOrders;
+    public List<Order> getNoManOrders() {
+        return noManOrders;
     }
 
-    public void setNobodyOrders(List<Order> nobodyOrders) {
-        this.nobodyOrders = nobodyOrders;
+    public void setNoManOrders(List<Order> noManOrders) {
+        this.noManOrders = noManOrders;
     }
 
-    public Order getSelectedNobodyOrder() {
-        return selectedNobodyOrder;
+    public Order getSelectedNoManOrder() {
+        return selectedNoManOrder;
     }
 
-    public void setSelectedNobodyOrder(Order selectedNobodyOrder) {
-        this.selectedNobodyOrder = selectedNobodyOrder;
+    public void setSelectedNoManOrder(Order selectedNoManOrder) {
+        this.selectedNoManOrder = selectedNoManOrder;
     }
 
     public OrderStatusType getSelectedOrderStatus() {
@@ -429,12 +424,12 @@ public class WaiterBackingBean
         this.selectedOrderStatus = selectedOrderStatus;
     }
 
-    public Account getWaiter() {
-        return waiter;
+    public Account getCurrentWaiter() {
+        return currentWaiter;
     }
 
-    public void setWaiter(Account waiter) {
-        this.waiter = waiter;
+    public void setCurrentWaiter(Account currentWaiter) {
+        this.currentWaiter = currentWaiter;
     }
 
     public Order getEditableOrder() {
@@ -501,19 +496,19 @@ public class WaiterBackingBean
         this.selectedOrderDetail = selectedOrderDetail;
     }
 
-    public boolean isWithDisabled() {
-        return withDisabled;
+    public boolean isDisabledIncluded() {
+        return isDisabledIncluded;
     }
 
-    public void setWithDisabled(boolean withDisabled) {
-        this.withDisabled = withDisabled;
+    public void setDisabledIncluded(boolean disabledIncluded) {
+        this.isDisabledIncluded = disabledIncluded;
     }
 
-    public Order getLastNoMansOrder() {
-        return lastNoMansOrder;
+    public Order getLastNoManOrder() {
+        return lastNoManOrder;
     }
 
-    public void setLastNoMansOrder(Order lastNoMansOrder) {
-        this.lastNoMansOrder = lastNoMansOrder;
+    public void setLastNoManOrder(Order lastNoManOrder) {
+        this.lastNoManOrder = lastNoManOrder;
     }
 }

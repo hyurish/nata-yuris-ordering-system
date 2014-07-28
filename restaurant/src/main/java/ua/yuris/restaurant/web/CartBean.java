@@ -37,8 +37,7 @@ import ua.yuris.restaurant.web.cartstate.CartStateFactory;
  */
 @ManagedBean
 @SessionScoped
-public class CartBean
-        implements Serializable {
+public class CartBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(CartBean.class);
 
     @ManagedProperty(value = "#{orderService}")
@@ -66,20 +65,23 @@ public class CartBean
     }
 
     public Integer countNewItemsInCart(MenuItem menuItem) {
+        int nItems = 0;
         OrderDetail orderDetail = findNewOrderDetail(menuItem);
         if (orderDetail != null) {
-            return orderDetail.getItemQuantity();
+            nItems = orderDetail.getItemQuantity();
         }
-        return 0;
+        return nItems;
     }
 
     private OrderDetail findNewOrderDetail(MenuItem menuItem) {
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            if (orderDetail.isNewEntity() && orderDetail.getMenuItem().equals(menuItem)) {
-                return orderDetail;
+        OrderDetail orderDetail = null;
+        for (OrderDetail detail : order.getOrderDetails()) {
+            if (detail.isNewEntity() && detail.getMenuItem().equals(menuItem)) {
+                orderDetail = detail;
+                break;
             }
         }
-        return null;
+        return orderDetail;
     }
 
     /**
@@ -197,6 +199,7 @@ public class CartBean
                     e.getMessage());
             throw new DataAccessRestaurantException("Order saving failed",e);
         }
+        isCartStateChanged =true;
     }
 
     private void populateOrder(String guestName, RestaurantTable restaurantTable, String comments) {
@@ -218,10 +221,7 @@ public class CartBean
      * Cart is editable until bill is issued.
      */
     public boolean isCartEditable() {
-        if (order.getStatus() == null || order.getStatus() == OrderStatusType.SUBMITTED) {
-            return true;
-        }
-        return false;
+        return order.getStatus() == null || order.getStatus() == OrderStatusType.SUBMITTED;
     }
 
     /*

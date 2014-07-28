@@ -17,7 +17,7 @@
             >
         <h:form id="leftMenuForm">
             <div class="p1020" >
-                <ui:repeat value="#{menuItemsBackingBean.categories}" var="menuCategory">
+                <ui:repeat value="#{menuItemsBackingBean.menuCategories}" var="menuCategory">
                     <div class="left-menu-btns">
                         <p:commandButton value="#{menuCategory.title}"
                                          actionListener="#{menuItemsBackingBean.changeCategory(menuCategory)}"
@@ -76,7 +76,7 @@
                             <p:commandButton id="toggler"
                                              actionListener="#{menuItemsBackingBean.onHideShowDisabled}"
                                              update=":menuItemsForm:menuItemsTable"
-                                             value="#{menuItemsBackingBean.withDisabled ? 'Hide Disabled' : 'Show disabled'}"
+                                             value="#{menuItemsBackingBean.disabledIncluded ? 'Hide Disabled' : 'Show disabled'}"
                                              icon="ui-icon-calculator" />
                         </div>
                         <div class="cBoth"/>
@@ -91,7 +91,7 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:commandLink ajax="true" process="@this"
-                                               actionListener="#{menuItemsBackingBean.chooseImage(menuItem)}">
+                                               actionListener="#{menuItemsBackingBean.onChooseImage(menuItem)}">
                                     <p:graphicImage library="images/gallery"
                                                     name="#{menuItem.picture}" width="100px"/>
                                     <p:ajax event="dialogReturn"
@@ -161,7 +161,7 @@
                                 <p:selectOneMenu value="#{menuItem.menuCategory}"
                                                  converter="#{menuCategoryConverter}"
                                                  style="width: 100%" styleClass="aLeft">
-                                    <f:selectItems value="#{menuItemsBackingBean.categories}"
+                                    <f:selectItems value="#{menuItemsBackingBean.menuCategories}"
                                                    var="cat"
                                                    itemLabel="#{cat.title}"
                                                    itemValue="#{cat}" />

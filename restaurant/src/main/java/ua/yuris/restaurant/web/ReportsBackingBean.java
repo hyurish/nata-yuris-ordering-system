@@ -27,8 +27,7 @@ import ua.yuris.restaurant.service.ReportService;
  */
 @ManagedBean
 @ViewScoped
-public class ReportsBackingBean
-        implements Serializable {
+public class ReportsBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(ReportsBackingBean.class);
 
 

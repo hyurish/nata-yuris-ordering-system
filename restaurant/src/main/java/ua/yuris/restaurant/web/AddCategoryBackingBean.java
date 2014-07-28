@@ -21,8 +21,7 @@ import ua.yuris.restaurant.model.MenuCategory;
  */
 @ManagedBean
 @RequestScoped
-public class AddCategoryBackingBean
-        implements Serializable {
+public class AddCategoryBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(AddCategoryBackingBean.class);
 
     private String categoryTitle;
@@ -43,9 +42,14 @@ public class AddCategoryBackingBean
     }
 
     public void onSaveAction(ActionEvent actionEvent) {
+        MenuCategory menuCategory = createMenuCategory();
+        RequestContext.getCurrentInstance().closeDialog(menuCategory);
+    }
+
+    private MenuCategory createMenuCategory() {
         MenuCategory menuCategory = new MenuCategory();
         menuCategory.setTitle(categoryTitle);
         menuCategory.setActive(true);
-        RequestContext.getCurrentInstance().closeDialog(menuCategory);
+        return menuCategory;
     }
 }

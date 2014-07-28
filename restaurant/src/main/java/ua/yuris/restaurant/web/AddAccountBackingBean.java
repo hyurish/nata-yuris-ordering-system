@@ -22,6 +22,7 @@ import ua.yuris.restaurant.model.Account;
 import ua.yuris.restaurant.model.Role;
 import ua.yuris.restaurant.service.AccountService;
 import ua.yuris.restaurant.service.RoleStateService;
+import ua.yuris.restaurant.util.FacesMessagesUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,13 +33,11 @@ import ua.yuris.restaurant.service.RoleStateService;
  */
 @ManagedBean
 @RequestScoped
-public class AddAccountBackingBean
-        implements Serializable {
+public class AddAccountBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(AddAccountBackingBean.class);
 
     @ManagedProperty(value = "#{accountService}")
     private AccountService accountService;
-
     @ManagedProperty(value = "#{roleStateService}")
     private RoleStateService roleStateService;
 
@@ -52,25 +51,18 @@ public class AddAccountBackingBean
     @PostConstruct
     public void initialize() {
         account = new Account();
+        loadRoles();
+    }
+
+    private void loadRoles() {
         roles = roleStateService.findAllActiveRoles();
     }
 
     public String onCancel() {
-        addInfoMessageToFacesContext("Account creation cancelled", "Account creation cancelled");
+        String summary = "Account creation cancelled";
+        FacesMessagesUtil.addInfoMessageToFacesContext(summary);
 
         return "security-officer?faces-redirect=true";
-    }
-
-    private void addInfoMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_INFO);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    private void addErrorMessageToFacesContext(String summary, String detail) {
-        FacesMessage msg = new FacesMessage(summary, detail);
-        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
     public String onSave() {
@@ -78,35 +70,34 @@ public class AddAccountBackingBean
             accountService.saveAccount(account);
         } catch (TransactionException e) {
             LOG.error(e.getMessage());
-            addErrorMessageToFacesContext("Database operation failed", "Database operation failed");
+            String summary = "Database operation failed";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
             return "";
         }
 
         return "security-officer?faces-redirect=true";
     }
 
-    public boolean checkAvailableUsername(AjaxBehaviorEvent event) {
+    public void onUsernameChanged(AjaxBehaviorEvent event) {
 
         InputText inputText = (InputText) event.getSource();
-        String value = (String) inputText.getValue();
+        String username = (String) inputText.getValue();
 
-        boolean available = accountService.checkAvailableUsername(value);
-
-        if (available) {
-        } else {
-            addErrorMessageToFacesContext("Username already exists",
-                    "Username '" + value + "' already exists");
+        if (isUsernameExist(username)) {
+            String summary = "Username '" + username + "' already exists";
+            FacesMessagesUtil.addErrorMessageToFacesContext(summary);
         }
-
-        return available;
     }
 
-    public void usernameAvailabilityCheck(FacesContext context, UIComponent component,
-                                          Object value) {
-        if (value == null) return;
-        boolean available = accountService.checkAvailableUsername(value.toString());
+    private boolean isUsernameExist(String username) {
+        return !accountService.checkAvailableUsername(username);
+    }
 
-        if (!available) {
+    public void usernameAvailabilityValidation(FacesContext context, UIComponent component,
+                                               Object value) {
+        if (value == null) return;
+
+        if (isUsernameExist(value.toString())) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Username validation failed",
                     "Username " + value.toString() + " already exists");

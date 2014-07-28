@@ -24,39 +24,33 @@ import org.slf4j.LoggerFactory;
  */
 @ManagedBean
 @RequestScoped
-public class LoginBackingBean
-        implements Serializable {
+public class LoginBackingBean implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(LoginBackingBean.class);
 
     public LoginBackingBean() {
     }
 
     public String doLogin() throws ServletException, IOException {
-        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
-
-        RequestDispatcher dispatcher = ((ServletRequest) context.getRequest())
-                .getRequestDispatcher("/j_spring_security_check");
-
-        dispatcher.forward((ServletRequest) context.getRequest(),
-                (ServletResponse) context.getResponse());
-
-        FacesContext.getCurrentInstance().responseComplete();
-
+        String path = "/j_spring_security_check";
+        forward(path);
         return null;
     }
 
     public String doLogout() throws ServletException, IOException {
+        String path = "/j_spring_security_logout";
+        forward(path);
+        return null;
+    }
+
+    private void forward(String path) throws ServletException, IOException {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
 
         RequestDispatcher dispatcher = ((ServletRequest) context.getRequest())
-                .getRequestDispatcher("/j_spring_security_logout");
+                .getRequestDispatcher(path);
 
         dispatcher.forward((ServletRequest) context.getRequest(),
                 (ServletResponse) context.getResponse());
 
         FacesContext.getCurrentInstance().responseComplete();
-
-        return null;
     }
-
 }
