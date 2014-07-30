@@ -7,7 +7,6 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 
@@ -16,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ua.yuris.restaurant.exception.RestaurantException;
+import ua.yuris.restaurant.model.Order;
 import ua.yuris.restaurant.model.OrderDetail;
 import ua.yuris.restaurant.model.RestaurantTable;
 import ua.yuris.restaurant.service.OrderService;
@@ -41,7 +41,9 @@ public class OrderBackingBean implements Serializable {
     @ManagedProperty(value = "#{cartBean}")
     private CartBean cartBean;
 
-    private String customerName;
+    private Order currentOrder;
+
+    private String guestName;
     private RestaurantTable restaurantTable;
     private List<RestaurantTable> restaurantTables;
     private String comments;
@@ -51,15 +53,18 @@ public class OrderBackingBean implements Serializable {
 
     @PostConstruct
     public void initialize() {
+        currentOrder = cartBean.getOrder();
 
+        initializeRestaurantTable();
+        initializeGuestName();
+    }
+
+    private void initializeRestaurantTable() {
         restaurantTables = orderService.findAllActiveTable();
-        if (cartBean.getOrder().getRestaurantTable() == null) {
-            restaurantTable = getDefaultRestaurantTable();
+        if (currentOrder.getRestaurantTable() != null) {
+            restaurantTable = currentOrder.getRestaurantTable();
         } else {
-            restaurantTable = cartBean.getOrder().getRestaurantTable();
-        }
-        if (cartBean.getOrder().getGuestName() != null) {
-            customerName = cartBean.getOrder().getGuestName();
+            restaurantTable = getDefaultRestaurantTable();
         }
     }
 
@@ -67,9 +72,23 @@ public class OrderBackingBean implements Serializable {
         return orderService.findRestaurantTable(DEFAULT_RESTAURANT_TABLE_ID);
     }
 
+    private void initializeGuestName() {
+        if (currentOrder.getGuestName() != null) {
+            guestName = currentOrder.getGuestName();
+        }
+    }
+
     public String getHeader() {
         CartState cartState = cartBean.getCartState();
         return cartState.getCartHeader();
+    }
+
+    public double getTotal() {
+        return cartBean.getTotal();
+    }
+
+    public List<OrderDetail> getOrderDetails() {
+        return currentOrder.getOrderDetails();
     }
 
     public void takeItem(OrderDetail orderDetail) {
@@ -112,7 +131,8 @@ public class OrderBackingBean implements Serializable {
 
     public void saveOrder() {
         try {
-            cartBean.saveOrder(customerName, restaurantTable, comments);
+            cartBean.saveOrder(guestName, restaurantTable, comments);
+            currentOrder = cartBean.getOrder();
         } catch (RestaurantException e) {
             LOG.error(e.getMessage());
         }
@@ -136,6 +156,10 @@ public class OrderBackingBean implements Serializable {
         if (cartBean.isCartRefreshed()) {
             RequestContext.getCurrentInstance().update("orderForm");
         }
+    }
+
+    public Order getCurrentOrder() {
+        return currentOrder;
     }
 
     public OrderService getOrderService() {
@@ -170,12 +194,12 @@ public class OrderBackingBean implements Serializable {
         this.restaurantTables = restaurantTables;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getGuestName() {
+        return guestName;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setGuestName(String guestName) {
+        this.guestName = guestName;
     }
 
     public String getComments() {

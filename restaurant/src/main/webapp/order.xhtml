@@ -32,11 +32,11 @@
                                         <h:outputText value="Name: "/>
                                         <h:outputText value="*&nbsp;" />
                                         <p:inputText id="customerNameId"
-                                                     value="#{orderBackingBean.customerName}"
+                                                     value="#{orderBackingBean.guestName}"
                                                      required="true" requiredMessage="Please fill in this field."
                                                      maxlength="30"
                                                      styleClass="input"
-                                                     disabled="#{orderBackingBean.cartBean.order.guestName != null}"/>
+                                                     disabled="#{orderBackingBean.guestName != null}"/>
                                     </h:panelGroup>
 
                                 </div>
@@ -51,7 +51,7 @@
                                         <p:selectOneMenu id="tableInputId"
                                                 value="#{orderBackingBean.restaurantTable}"
                                                 converter="#{restaurantTableConverter}"
-                                                disabled="#{orderBackingBean.cartBean.order.restaurantTable != null}"
+                                                disabled="#{orderBackingBean.currentOrder.restaurantTable != null}"
                                                 styleClass="tableInput input" >
                                             <f:selectItems value="#{orderBackingBean.restaurantTables}"
                                                            var="table"
@@ -67,10 +67,10 @@
                     <div style="clear: both;" />
 
                     <p:outputPanel id="orderDetailsId" style="display:block" styleClass="orderDetails updatable-table">
-                        <p:dataTable id="orderTable" value="#{orderBackingBean.cartBean.order.orderDetails}"
+                        <p:dataTable id="orderTable" value="#{orderBackingBean.orderDetails}"
                                      var="orderDetail"
                                      rowStyleClass="#{orderDetail.id == null ? null : 'confirmed'}"
-                                     rendered="#{not empty orderBackingBean.cartBean.order.orderDetails}">
+                                     rendered="#{not empty orderBackingBean.orderDetails}">
 
                             <p:column style="width: 60px">
                                 <p:outputPanel style="display:block" styleClass="item-del"
@@ -147,7 +147,7 @@
                                     <h:outputText value="#{orderDetail.itemQuantity * orderDetail.prettyPrice}  &nbsp;&#8372;"/>
                                 </p:outputPanel>
                                 <f:facet name="footer">
-                                    <h:outputText id="menuItemTotalId" styleClass="updatable" value="#{cartBean.total} &nbsp;&#8372;"/>
+                                    <h:outputText id="menuItemTotalId" styleClass="updatable" value="#{orderBackingBean.total} &nbsp;&#8372;"/>
                                 </f:facet>
                             </p:column>
 
